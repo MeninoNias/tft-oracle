@@ -1,0 +1,163 @@
+version: "3"
+
+vars:
+  BACKEND_DIR: backend
+  FRONTEND_DIR: frontend
+  TAURI_DIR: src-tauri
+
+tasks:
+  # ========================
+  # Code Generation
+  # ========================
+  generate:
+    desc: Generate all code (Protobuf + sqlc)
+    cmds:
+      - task: generate:proto
+      - task: generate:sqlc
+
+  generate:proto:
+    desc: Generate Go and TypeScript code from Protobuf definitions
+    cmds:
+      - buf generate
+
+  generate:sqlc:
+    desc: Generate type-safe Go code from SQL queries
+    dir: "{{.BACKEND_DIR}}"
+    cmds:
+      - sqlc generate
+
+  # ========================
+  # Development
+  # ========================
+  dev:
+    desc: Start all services in dev mode
+    deps:
+      - dev:backend
+      - dev:frontend
+
+  dev:backend:
+    desc: Run Go backend with hot reload
+    dir: "{{.BACKEND_DIR}}"
+    cmds:
+      - go run ./cmd/server
+
+  dev:frontend:
+    desc: Run Vite dev server
+    dir: "{{.FRONTEND_DIR}}"
+    cmds:
+      - npm run dev
+
+  dev:tauri:
+    desc: Run Tauri in dev mode (frontend + backend + shell)
+    dir: "{{.TAURI_DIR}}"
+    cmds:
+      - cargo tauri dev
+
+  # ========================
+  # Linting
+  # ========================
+  lint:
+    desc: Lint all code
+    cmds:
+      - task: lint:proto
+      - task: lint:go
+      - task: lint:frontend
+
+  lint:proto:
+    desc: Lint Protobuf files
+    cmds:
+      - buf lint
+
+  lint:go:
+    desc: Lint Go code
+    dir: "{{.BACKEND_DIR}}"
+    cmds:
+      - golangci-lint run ./...
+
+  lint:frontend:
+    desc: Lint TypeScript/React code
+    dir: "{{.FRONTEND_DIR}}"
+    cmds:
+      - npm run lint
+
+  # ========================
+  # Testing
+  # ========================
+  test:
+    desc: Run all tests
+    cmds:
+      - task: test:go
+      - task: test:frontend
+
+  test:go:
+    desc: Run Go tests
+    dir: "{{.BACKEND_DIR}}"
+    cmds:
+      - go test ./...
+
+  test:frontend:
+    desc: Run frontend tests
+    dir: "{{.FRONTEND_DIR}}"
+    cmds:
+      - npm run test
+
+  # ========================
+  # Formatting
+  # ========================
+  fmt:
+    desc: Format all code
+    cmds:
+      - task: fmt:go
+      - task: fmt:frontend
+
+  fmt:go:
+    desc: Format Go code
+    dir: "{{.BACKEND_DIR}}"
+    cmds:
+      - gofmt -w .
+
+  fmt:frontend:
+    desc: Format frontend code
+    dir: "{{.FRONTEND_DIR}}"
+    cmds:
+      - npm run format
+
+  # ========================
+  # Database
+  # ========================
+  migrate:up:
+    desc: Run database migrations
+    cmds:
+      - echo "Migration tool not yet configured — see issue #3"
+
+  migrate:down:
+    desc: Rollback last migration
+    cmds:
+      - echo "Migration tool not yet configured — see issue #3"
+
+  # ========================
+  # Build
+  # ========================
+  build:
+    desc: Build production artifacts
+    cmds:
+      - task: build:backend
+      - task: build:frontend
+
+  build:backend:
+    desc: Build Go backend binary
+    dir: "{{.BACKEND_DIR}}"
+    cmds:
+      - go build -o bin/server ./cmd/server
+
+  build:frontend:
+    desc: Build frontend for production
+    dir: "{{.FRONTEND_DIR}}"
+    cmds:
+      - npm run build
+
+  build:tauri:
+    desc: Build Tauri .exe for distribution
+    dir: "{{.TAURI_DIR}}"
+    cmds:
+      - cargo tauri build

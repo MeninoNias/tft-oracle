@@ -1,0 +1,57 @@
+# ========================
+# Environment & Secrets
+# ========================
+.env
+.env.local
+.env.*.local
+
+# ========================
+# Go
+# ========================
+backend/tmp/
+backend/vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.out
+
+# ========================
+# Node / Frontend
+# ========================
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# ========================
+# Rust / Tauri
+# ========================
+src-tauri/target/
+src-tauri/Cargo.lock
+
+# ========================
+# Generated code (Protobuf)
+# ========================
+backend/gen/
+frontend/src/gen/
+
+# ========================
+# Generated code (sqlc)
+# ========================
+backend/sqlc/generated/
+
+# ========================
+# IDE & OS
+# ========================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
