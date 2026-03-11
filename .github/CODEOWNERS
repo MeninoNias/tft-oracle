@@ -1,0 +1,15 @@
+# Default owner for everything
+* @MeninoNias
+
+# Frontend (Tauri + React)
+/frontend/ @MeninoNias
+/src-tauri/ @MeninoNias
+
+# Backend (Go)
+/backend/ @MeninoNias
+
+# Protobuf contracts
+/proto/ @MeninoNias
+
+# Infrastructure & CI
+/.github/ @MeninoNias

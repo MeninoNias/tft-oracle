@@ -74,15 +74,19 @@ A arquitetura foi desenhada para suportar alta concorrencia, processamento pesad
 
 **Issues**: #12, #13, #14, #15
 
-### FASE 4: Polimento, Tier Lists e Lancamento
+### FASE 4: Crawler, Super Tier List Consolidada e Lancamento
 
-**Objetivo**: Finalizar as pontas soltas para a versao 1.0.
+**Objetivo**: Entregar o melhor meta instantaneamente ao usuario via web scraping consolidado.
 
-- Tier List Estatica: Melhores composicoes do patch
+O backend Go atua oficialmente como um **Crawler** que raspa os 3 principais sites de meta (MetaTFT, TFTactics, Mobalytics) diariamente, cruza os dados e gera uma **Super Tier List Consolidada** — unificando as melhores composicoes de todas as fontes num ranking unico e confiavel.
+
+- Crawler Go: Workers concorrentes (Goroutines) que raspam MetaTFT, TFTactics e Mobalytics diariamente
+- Motor de Consolidacao: Algoritmo de normalizacao e ranking cruzado entre as 3 fontes
+- Super Tier List UI: Exibicao da tier list consolidada com origem dos dados e confianca
 - Design e UX: Animacoes, skeletons, tratamento de erros
 - Build do Tauri: Binario .exe para Windows
 
-**Issues**: #16, #17, #18
+**Issues**: #16 (substituida), #17, #18, #22, #23, #24
 
 ## 4. Fora do Escopo (MVP)
 

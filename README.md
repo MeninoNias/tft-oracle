@@ -14,7 +14,7 @@ Unlike MetaTFT, TFTactics, or Mobalytics, TFT Oracle is designed with **zero imp
 | **UI** | React + Vite | Rich ecosystem, Drag-and-Drop via `@dnd-kit` |
 | **Styling** | TailwindCSS + shadcn/ui | Dark mode gamer aesthetic, responsive |
 | **State** | TanStack Query + Zustand | Efficient caching and state management |
-| **Backend** | Go (Golang) | Native concurrency (Goroutines) for heavy Riot API processing |
+| **Backend** | Go (Golang) | Native concurrency (Goroutines) for Riot API processing + web crawling |
 | **API Protocol** | gRPC via Connect RPC (Buf) | End-to-end typed contracts, auto-generated React hooks |
 | **Database** | PostgreSQL + sqlc/pgx | Structured relational data, compiled SQL (no ORM overhead) |
 | **Cache** | Redis | Save Riot API rate limits (Phase 2+) |
@@ -55,11 +55,12 @@ Unlike MetaTFT, TFTactics, or Mobalytics, TFT Oracle is designed with **zero imp
 - OpenAI integration with JSON Schema response
 - Win probability and positioning tips display
 
-### Phase 4 — Polish, Tier Lists & Launch
-- Static tier list (curated/Challenger data)
+### Phase 4 — Crawler, Consolidated Super Tier List & Launch
+- Go Crawler scraping MetaTFT, TFTactics, and Mobalytics daily
+- Consolidation engine: normalize and cross-rank data from all 3 sources
+- Super Tier List UI with source attribution and confidence scores
 - UX refinement (animations, skeletons, error handling)
 - Tauri build (.exe for Windows)
-- MVP distribution
 
 ## Out of Scope (MVP)
 
