@@ -36,6 +36,9 @@ Instructions for AI agents (Claude Code, Copilot, Cursor, etc.) working on this 
 - Run `buf lint` before committing any `.proto` changes.
 - Run `buf generate` after modifying protos to regenerate Go + TypeScript code.
 - Never hand-edit files in `backend/gen/` or `frontend/src/gen/`.
+- The `apiName` field is the universal join key across CommunityDragon and Riot API data.
+- Two services defined: `PatchService` (static game data) and `PlayerService` (player data).
+- See `docs/DATA_SOURCES.md` for the complete field mapping from external sources to proto messages.
 
 ### SQL (migrations/, backend/sqlc/)
 
@@ -70,6 +73,8 @@ Instructions for AI agents (Claude Code, Copilot, Cursor, etc.) working on this 
 ## Project Context
 
 - Full spec: `docs/SPEC.md` (Portuguese)
+- Data source mapping: `docs/DATA_SOURCES.md` (CommunityDragon, Riot API, Scrapers)
 - Architecture and commands: `CLAUDE.md`
-- 4 development phases tracked via GitHub milestones (#1-#24)
+- Protobuf contracts: `proto/tft/v1/patch.proto`, `proto/tft/v1/player.proto`
+- 4 development phases tracked via GitHub milestones (#1-#30)
 - Target: ~50MB RAM, zero FPS impact during TFT gameplay

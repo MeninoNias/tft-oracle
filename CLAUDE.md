@@ -39,22 +39,25 @@ TFT Oracle is an ultra-lightweight desktop app (~50MB RAM) that acts as an AI-po
 | Data sync | CommunityDragon | Game data (champions, items, traits) |
 | Crawler | Go (Goroutines) | MetaTFT, TFTactics, Mobalytics (Phase 4) |
 
-## Project Structure (planned)
+## Project Structure
 
 ```
 tft-oracle/
 ├── proto/                  # Protobuf contracts (.proto files)
+│   └── tft/v1/
+│       ├── patch.proto     # PatchService — champions, items, traits (CommunityDragon)
+│       └── player.proto    # PlayerService — profile, ranked, match history (Riot API)
 ├── backend/                # Go backend (Connect RPC server)
 │   ├── cmd/server/         # Entry point
 │   ├── internal/           # Business logic
-│   ├── gen/                # Generated protobuf code
+│   ├── gen/                # Generated protobuf code (gitignored)
 │   └── sqlc/               # Generated SQL queries
 ├── frontend/               # React + Vite app
 │   ├── src/
 │   │   ├── components/     # UI components
 │   │   ├── hooks/          # Custom hooks
 │   │   ├── stores/         # Zustand stores
-│   │   └── gen/            # Generated Connect-Query hooks
+│   │   └── gen/            # Generated Connect-Query hooks (gitignored)
 │   └── index.html
 ├── src-tauri/              # Tauri v2 Rust shell
 ├── migrations/             # PostgreSQL migrations
@@ -138,9 +141,33 @@ sqlc generate                               # Generate Go from SQL queries
 - **Out of MVP scope**: No memory/screen reading (Vanguard anti-cheat risk), no auto lobby detection (manual Riot ID), no deterministic combat sim (AI heuristics instead)
 - **Security**: Never commit API keys (.env files). Riot API key, OpenAI key, and DB credentials go in environment variables only.
 
+## Data Architecture
+
+The `apiName` field is the universal join key across all data sources:
+
+| CommunityDragon | Riot API | Join |
+|-----------------|----------|------|
+| `Champion.api_name` | `MatchUnit.character_id` | Champion identity |
+| `Item.api_name` | `MatchUnit.item_names[]` | Item identity |
+| `Trait.api_name` | `MatchTrait.api_name` | Trait identity |
+| Augment `api_name` (in items) | `Participant.augments[]` | Augment identity |
+
+### Protobuf Services
+
+| Service | Proto | Phase | Data Source |
+|---------|-------|-------|-------------|
+| `PatchService.GetPatchData` | `proto/tft/v1/patch.proto` | 1 | CommunityDragon |
+| `PlayerService.GetPlayerProfile` | `proto/tft/v1/player.proto` | 2 | Riot API |
+| `PlayerService.GetMatchHistory` | `proto/tft/v1/player.proto` | 2 | Riot API |
+
 ## Key Files
 
 - `docs/SPEC.md` — Full technical specification (Portuguese)
+- `docs/DATA_SOURCES.md` — Complete external data source mapping (CommunityDragon, Riot API, Scrapers)
+- `proto/tft/v1/patch.proto` — PatchService contract (champions, items, traits)
+- `proto/tft/v1/player.proto` — PlayerService contract (profile, ranked, matches)
+- `buf.yaml` / `buf.gen.yaml` — Buf configuration for code generation
+- `Taskfile.yml` — Task runner (generate, lint, dev, build)
 - `.github/ISSUE_TEMPLATE/` — Bug report and feature request templates
 - `.github/pull_request_template.md` — PR template with checklist
 - `.github/CONTRIBUTING.md` — Contribution guide with conventions
