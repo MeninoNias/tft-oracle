@@ -207,6 +207,86 @@ func TestParseFiltersNonPlayableUnits(t *testing.T) {
 	}
 }
 
+func TestIsRealItem(t *testing.T) {
+	setItemPrefix := "tft16_item_"
+
+	tests := []struct {
+		name     string
+		apiName  string
+		expected bool
+	}{
+		// Real items — should pass
+		{"base component", "tft_item_bfsword", true},
+		{"base crafted item", "tft_item_guinsoosrageblade", true},
+		{"set-specific item", "tft16_item_specialweapon", true},
+
+		// Non-items — should be filtered
+		{"generic augment", "tft_augment_cyberbuff", false},
+		{"set augment", "tft16_augment_somebuff", false},
+		{"teamup augment", "tft16_teamupaugment_duo", false},
+		{"assist gold", "tft_assist_gold_1", false},
+		{"assist rerolls", "tft_assist_rerolls_11", false},
+		{"generic consumable", "tft_consumable_something", false},
+		{"set consumable", "tft16_consumable_something", false},
+		{"explorer reward", "tft16_explorer_reward", false},
+		{"champion mechanic", "tft16_championitem_special", false},
+		{"xerath mechanic", "tft16_xerathzap_damage", false},
+		{"event item", "tftevent_5yr_item_something", false},
+		{"tutorial augment", "tfttutorial_augment_something", false},
+		{"other set item", "tft9_item_oldsword", false},
+		{"armory key", "tft_armorykey_component", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := isRealItem(tt.apiName, setItemPrefix)
+			if got != tt.expected {
+				t.Errorf("isRealItem(%q, %q) = %v, want %v", tt.apiName, setItemPrefix, got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestFilterItemsIntegration(t *testing.T) {
+	allItems := []CDragonItem{
+		// Real items
+		{APIName: "TFT_Item_BFSword", Name: "B.F. Sword"},
+		{APIName: "TFT_Item_GuinsoosRageblade", Name: "Guinsoo's Rageblade"},
+		{APIName: "TFT16_Item_SpecialWeapon", Name: "Special Weapon"},
+		// Non-items
+		{APIName: "TFT_Augment_CyberBuff", Name: "Cyber Buff"},
+		{APIName: "TFT16_Augment_SomeBuff", Name: "Some Buff"},
+		{APIName: "TFT_Assist_Gold_1", Name: "1 Gold"},
+		{APIName: "TFT_Consumable_Remover", Name: "Remover"},
+		{APIName: "TFT16_Explorer_Reward", Name: "Explorer Reward"},
+		{APIName: "TFT16_XerathZap_Damage", Name: "Xerath Zap"},
+		{APIName: "TFTEvent_5YR_Item_Sword", Name: "Event Sword"},
+		{APIName: "TFTTutorial_Augment_Starter", Name: "Tutorial Augment"},
+		{APIName: "TFT9_Item_OldSword", Name: "Old Sword"},
+	}
+
+	items := filterItems(allItems, "TFTSet16", 16)
+
+	if len(items) != 3 {
+		names := make([]string, len(items))
+		for i, item := range items {
+			names[i] = item.APIName
+		}
+		t.Errorf("expected 3 real items, got %d: %v", len(items), names)
+	}
+
+	expected := map[string]bool{
+		"TFT_Item_BFSword":         true,
+		"TFT_Item_GuinsoosRageblade": true,
+		"TFT16_Item_SpecialWeapon": true,
+	}
+	for _, item := range items {
+		if !expected[item.APIName] {
+			t.Errorf("unexpected item in results: %s", item.APIName)
+		}
+	}
+}
+
 func TestHasSetNumber(t *testing.T) {
 	tests := []struct {
 		apiName  string
