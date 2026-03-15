@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 const navItems = [
   { to: "/champions", label: "champions" },
   { to: "/items", label: "items" },
+  { to: "/player", label: "player" },
 ];
 
 export function Sidebar() {
@@ -12,7 +13,7 @@ export function Sidebar() {
         <h1 className="text-sm font-bold tracking-wider text-white">
           TFT_ORACLE
         </h1>
-        <p className="mt-0.5 text-[10px] text-lofi-muted">v0.1.0 // phase 1</p>
+        <p className="mt-0.5 text-[10px] text-lofi-muted">v0.2.0 // phase 2</p>
       </div>
 
       <nav className="flex-1 px-2 py-3">
@@ -44,7 +45,7 @@ export function Sidebar() {
 
       <div className="border-t border-lofi-border px-4 py-3">
         <p className="text-[10px] text-lofi-muted">
-          data: communitydragon
+          data: communitydragon + riot api
         </p>
       </div>
     </aside>
