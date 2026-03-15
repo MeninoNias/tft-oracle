@@ -18,3 +18,6 @@ SELECT * FROM champions WHERE set_number = $1 ORDER BY cost, name;
 
 -- name: GetChampionByApiName :one
 SELECT * FROM champions WHERE api_name = $1 AND set_number = $2;
+
+-- name: DeleteChampionsBySet :exec
+DELETE FROM champions WHERE set_number = $1;

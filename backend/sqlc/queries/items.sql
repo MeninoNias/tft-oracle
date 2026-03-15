@@ -16,3 +16,6 @@ RETURNING *;
 
 -- name: GetItemsBySet :many
 SELECT * FROM items WHERE set_number = $1 ORDER BY name;
+
+-- name: DeleteItemsBySet :exec
+DELETE FROM items WHERE set_number = $1;
