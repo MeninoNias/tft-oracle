@@ -101,7 +101,12 @@ func (s *Syncer) store(ctx context.Context, parsed *ParsedSet) error {
 		}
 	}
 
-	// 3. Upsert champions
+	// 3. Delete old champions for this set, then re-insert.
+	// This ensures stale entries (non-playable units from older syncs) are removed.
+	if err := qtx.DeleteChampionsBySet(ctx, setNumber); err != nil {
+		return fmt.Errorf("delete champions: %w", err)
+	}
+
 	for _, c := range parsed.Champions {
 		statsJSON, err := json.Marshal(map[string]interface{}{
 			"hp":              c.Stats.HP,
@@ -172,7 +177,11 @@ func (s *Syncer) store(ctx context.Context, parsed *ParsedSet) error {
 		}
 	}
 
-	// 5. Upsert items
+	// 5. Delete old items for this set, then re-insert (same as champions).
+	if err := qtx.DeleteItemsBySet(ctx, setNumber); err != nil {
+		return fmt.Errorf("delete items: %w", err)
+	}
+
 	for _, item := range parsed.Items {
 		effectsJSON, err := json.Marshal(item.Effects)
 		if err != nil {
