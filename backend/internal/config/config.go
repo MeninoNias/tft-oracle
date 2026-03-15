@@ -33,7 +33,7 @@ func Load() (*Config, error) {
 	}
 
 	if cfg.RiotAPIKey == "" {
-		return nil, fmt.Errorf("RIOT_API_KEY is required")
+		fmt.Println("WARNING: RIOT_API_KEY not set — player features will be unavailable")
 	}
 
 	return cfg, nil
