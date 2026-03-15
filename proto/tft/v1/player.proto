@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package tft.v1;
 
+option go_package = "github.com/MeninoNias/tft-oracle/backend/gen/tft/v1;tftv1";
+
 // PlayerService provides player-specific data from the Riot Games API.
 // Requires RIOT_API_KEY environment variable.
 service PlayerService {

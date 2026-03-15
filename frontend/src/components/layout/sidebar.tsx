@@ -1,0 +1,52 @@
+import { NavLink } from "react-router-dom";
+
+const navItems = [
+  { to: "/champions", label: "champions" },
+  { to: "/items", label: "items" },
+];
+
+export function Sidebar() {
+  return (
+    <aside className="flex h-screen w-64 flex-col border-r border-lofi-border bg-lofi-black">
+      <div className="border-b border-lofi-border px-4 py-4">
+        <h1 className="text-sm font-bold tracking-wider text-white">
+          TFT_ORACLE
+        </h1>
+        <p className="mt-0.5 text-[10px] text-lofi-muted">v0.1.0 // phase 1</p>
+      </div>
+
+      <nav className="flex-1 px-2 py-3">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              `flex items-center gap-2 rounded-sm px-3 py-2 text-xs transition-colors ${
+                isActive
+                  ? "bg-lofi-surface text-white"
+                  : "text-lofi-secondary hover:bg-lofi-surface hover:text-lofi-text"
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    isActive ? "bg-lofi-accent" : "bg-lofi-muted"
+                  }`}
+                />
+                {item.label}
+              </>
+            )}
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="border-t border-lofi-border px-4 py-3">
+        <p className="text-[10px] text-lofi-muted">
+          data: communitydragon
+        </p>
+      </div>
+    </aside>
+  );
+}

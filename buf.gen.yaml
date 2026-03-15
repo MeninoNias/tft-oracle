@@ -10,10 +10,6 @@ plugins:
     out: backend/gen
     opt: paths=source_relative
 
-  # TypeScript/ES generation
+  # TypeScript/ES generation (includes service descriptors for Connect v2)
   - remote: buf.build/bufbuild/es
-    out: frontend/src/gen
-
-  # Connect RPC TypeScript client
-  - remote: buf.build/connectrpc/es
     out: frontend/src/gen
