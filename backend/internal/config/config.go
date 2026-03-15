@@ -11,6 +11,10 @@ type Config struct {
 	ServerHost  string
 	AppEnv      string
 	LogLevel    string
+
+	// Phase 2: Riot API & Redis
+	RiotAPIKey string
+	RedisURL   string
 }
 
 func Load() (*Config, error) {
@@ -20,10 +24,16 @@ func Load() (*Config, error) {
 		ServerHost:  getEnv("SERVER_HOST", "localhost"),
 		AppEnv:      getEnv("APP_ENV", "development"),
 		LogLevel:    getEnv("LOG_LEVEL", "debug"),
+		RiotAPIKey:  getEnv("RIOT_API_KEY", ""),
+		RedisURL:    getEnv("REDIS_URL", "redis://localhost:6379"),
 	}
 
 	if cfg.DatabaseURL == "" {
 		return nil, fmt.Errorf("DATABASE_URL is required")
+	}
+
+	if cfg.RiotAPIKey == "" {
+		return nil, fmt.Errorf("RIOT_API_KEY is required")
 	}
 
 	return cfg, nil
