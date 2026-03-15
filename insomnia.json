@@ -1,0 +1,103 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_source": "insomnia",
+  "resources": [
+    {
+      "_id": "wrk_tft_oracle",
+      "_type": "workspace",
+      "name": "TFT Oracle API",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_tft_oracle",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8080"
+      }
+    },
+    {
+      "_id": "env_local",
+      "_type": "environment",
+      "parentId": "env_base",
+      "name": "Local",
+      "data": {
+        "base_url": "http://localhost:8080"
+      }
+    },
+    {
+      "_id": "fld_patch",
+      "_type": "request_group",
+      "parentId": "wrk_tft_oracle",
+      "name": "PatchService"
+    },
+    {
+      "_id": "fld_player",
+      "_type": "request_group",
+      "parentId": "wrk_tft_oracle",
+      "name": "PlayerService"
+    },
+    {
+      "_id": "req_get_patch_data",
+      "_type": "request",
+      "parentId": "fld_patch",
+      "name": "GetPatchData (latest set)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/tft.v1.PatchService/GetPatchData",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{}"
+      }
+    },
+    {
+      "_id": "req_get_patch_data_set",
+      "_type": "request",
+      "parentId": "fld_patch",
+      "name": "GetPatchData (specific set)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/tft.v1.PatchService/GetPatchData",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"setNumber\": 16\n}"
+      }
+    },
+    {
+      "_id": "req_get_player_profile",
+      "_type": "request",
+      "parentId": "fld_player",
+      "name": "GetPlayerProfile (unimplemented)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/tft.v1.PlayerService/GetPlayerProfile",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"gameName\": \"MeninoNias\",\n  \"tagLine\": \"BR1\",\n  \"region\": \"americas\"\n}"
+      }
+    },
+    {
+      "_id": "req_get_match_history",
+      "_type": "request",
+      "parentId": "fld_player",
+      "name": "GetMatchHistory (unimplemented)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/tft.v1.PlayerService/GetMatchHistory",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"puuid\": \"some-puuid\",\n  \"region\": \"americas\",\n  \"count\": 20\n}"
+      }
+    }
+  ]
+}

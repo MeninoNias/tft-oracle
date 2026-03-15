@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package tft.v1;
+
+option go_package = "github.com/MeninoNias/tft-oracle/backend/gen/tft/v1;tftv1";
+
+// PatchService provides static game data synchronized from CommunityDragon.
+// Source: https://raw.communitydragon.org/latest/cdragon/tft/{locale}.json
+service PatchService {
+  // GetPatchData returns the current patch data: champions, items, traits, and augments.
+  rpc GetPatchData(GetPatchDataRequest) returns (GetPatchDataResponse);
+}
+
+message GetPatchDataRequest {
+  // TFT set number. 0 or omitted = latest set.
+  int32 set_number = 1;
+  // Locale for localized names/descriptions (e.g. "en_us", "pt_br"). Default: "en_us".
+  string locale = 2;
+}
+
+message GetPatchDataResponse {
+  SetMetadata set = 1;
+  repeated Champion champions = 2;
+  repeated Item items = 3;
+  repeated Trait traits = 4;
+}
+
+// --- Set Metadata ---
+
+message SetMetadata {
+  int32 number = 1;
+  string name = 2;
+  string mutator = 3;
+}
+
+// --- Champion ---
+
+message Champion {
+  // Unique identifier, used as join key with Riot API UnitDTO.characterId.
+  string api_name = 1;
+  string name = 2;
+  int32 cost = 3;
+  string role = 4;
+  // Trait apiNames this champion belongs to.
+  repeated string trait_api_names = 5;
+  ChampionStats stats = 6;
+  ChampionAbility ability = 7;
+  string icon_url = 8;
+  string square_icon_url = 9;
+  string tile_icon_url = 10;
+}
+
+message ChampionStats {
+  double hp = 1;
+  double armor = 2;
+  double magic_resist = 3;
+  double damage = 4;
+  double attack_speed = 5;
+  double range = 6;
+  int32 mana = 7;
+  double initial_mana = 8;
+  double crit_chance = 9;
+  double crit_multiplier = 10;
+}
+
+message ChampionAbility {
+  string name = 1;
+  string desc = 2;
+  string icon_url = 3;
+  repeated AbilityVariable variables = 4;
+}
+
+message AbilityVariable {
+  string name = 1;
+  // Values per star level (index 0 = base, 1 = 1-star, 2 = 2-star, 3 = 3-star).
+  repeated double values = 2;
+}
+
+// --- Item ---
+
+message Item {
+  // Unique identifier, used as join key with Riot API UnitDTO.itemNames.
+  string api_name = 1;
+  string name = 2;
+  string desc = 3;
+  // Empty for base components, two apiNames for crafted items.
+  repeated string composition = 4;
+  map<string, double> effects = 5;
+  string icon_url = 6;
+  repeated string associated_traits = 7;
+  repeated string incompatible_traits = 8;
+  repeated string tags = 9;
+  bool unique = 10;
+}
+
+// --- Trait ---
+
+message Trait {
+  // Unique identifier, used as join key with Riot API TraitDTO.name.
+  string api_name = 1;
+  string name = 2;
+  string desc = 3;
+  string icon_url = 4;
+  repeated TraitEffect effects = 5;
+}
+
+message TraitEffect {
+  int32 min_units = 1;
+  int32 max_units = 2;
+  // 0 = inactive, 1 = bronze, 2 = silver, 3 = gold, 4 = chromatic.
+  int32 style = 3;
+  map<string, double> variables = 4;
+}

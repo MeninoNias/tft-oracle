@@ -1,0 +1,160 @@
+syntax = "proto3";
+
+package tft.v1;
+
+option go_package = "github.com/MeninoNias/tft-oracle/backend/gen/tft/v1;tftv1";
+
+// PlayerService provides player-specific data from the Riot Games API.
+// Requires RIOT_API_KEY environment variable.
+service PlayerService {
+  // GetPlayerProfile returns account, summoner, and ranked data for a Riot ID.
+  rpc GetPlayerProfile(GetPlayerProfileRequest) returns (GetPlayerProfileResponse);
+  // GetMatchHistory returns recent match history for a player.
+  rpc GetMatchHistory(GetMatchHistoryRequest) returns (GetMatchHistoryResponse);
+}
+
+// --- GetPlayerProfile ---
+
+message GetPlayerProfileRequest {
+  // Riot ID game name (e.g. "MeninoNias").
+  string game_name = 1;
+  // Riot ID tag line (e.g. "BR1").
+  string tag_line = 2;
+  // Riot routing region: "americas", "europe", "asia".
+  string region = 3;
+}
+
+message GetPlayerProfileResponse {
+  Account account = 1;
+  Summoner summoner = 2;
+  repeated RankedEntry ranked_entries = 3;
+}
+
+message Account {
+  string puuid = 1;
+  string game_name = 2;
+  string tag_line = 3;
+}
+
+message Summoner {
+  string id = 1;
+  string puuid = 2;
+  int32 profile_icon_id = 3;
+  int64 summoner_level = 4;
+  int64 revision_date = 5;
+}
+
+message RankedEntry {
+  // Queue type: "RANKED_TFT", "RANKED_TFT_TURBO", etc.
+  string queue_type = 1;
+  // Tier: "IRON", "BRONZE", "SILVER", ..., "CHALLENGER".
+  string tier = 2;
+  // Division: "I", "II", "III", "IV".
+  string rank = 3;
+  int32 league_points = 4;
+  int32 wins = 5;
+  int32 losses = 6;
+  bool hot_streak = 7;
+  bool veteran = 8;
+  bool fresh_blood = 9;
+  bool inactive = 10;
+  optional MiniSeries mini_series = 11;
+}
+
+message MiniSeries {
+  string progress = 1;
+  int32 wins = 2;
+  int32 losses = 3;
+  int32 target = 4;
+}
+
+// --- GetMatchHistory ---
+
+message GetMatchHistoryRequest {
+  string puuid = 1;
+  // Riot routing region: "americas", "europe", "asia".
+  string region = 2;
+  // Max matches to return (default 20, max 200).
+  int32 count = 3;
+  // Pagination offset (0-based).
+  int32 start = 4;
+}
+
+message GetMatchHistoryResponse {
+  repeated Match matches = 1;
+}
+
+message Match {
+  MatchMetadata metadata = 1;
+  MatchInfo info = 2;
+}
+
+message MatchMetadata {
+  string data_version = 1;
+  string match_id = 2;
+  // PUUIDs of all 8 participants.
+  repeated string participant_puuids = 3;
+}
+
+message MatchInfo {
+  int64 game_datetime = 1;
+  float game_length = 2;
+  string game_version = 3;
+  string game_variation = 4;
+  int32 queue_id = 5;
+  int32 tft_set_number = 6;
+  string tft_set_core_name = 7;
+  string tft_game_type = 8;
+  string end_of_game_result = 9;
+  repeated Participant participants = 10;
+}
+
+message Participant {
+  string puuid = 1;
+  // Final placement (1-8).
+  int32 placement = 2;
+  int32 level = 3;
+  int32 gold_left = 4;
+  int32 last_round = 5;
+  float time_eliminated = 6;
+  int32 total_damage_to_players = 7;
+  int32 players_eliminated = 8;
+  // Double Up partner group (-1 if solo).
+  int32 partner_group_id = 9;
+  // Augment apiNames (join key with Item.api_name where tag contains augment).
+  repeated string augments = 10;
+  Companion companion = 11;
+  repeated MatchTrait traits = 12;
+  repeated MatchUnit units = 13;
+}
+
+message Companion {
+  string content_id = 1;
+  string species = 2;
+  int32 item_id = 3;
+  int32 skin_id = 4;
+}
+
+message MatchTrait {
+  // Trait apiName (join key with Trait.api_name from PatchService).
+  string api_name = 1;
+  int32 num_units = 2;
+  // 0 = inactive, 1 = bronze, 2 = silver, 3 = gold, 4 = chromatic.
+  int32 style = 3;
+  int32 tier_current = 4;
+  int32 tier_total = 5;
+}
+
+message MatchUnit {
+  // Champion apiName (join key with Champion.api_name from PatchService).
+  string character_id = 1;
+  string name = 2;
+  // Star level (1-3).
+  int32 tier = 3;
+  // Cost tier (0 = 1-cost, 4 = 5-cost).
+  int32 rarity = 4;
+  // Item numeric IDs.
+  repeated int32 item_ids = 5;
+  // Item apiNames (join key with Item.api_name from PatchService).
+  repeated string item_names = 6;
+}

@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  /* Lofi monospaced color palette */
+  --color-lofi-black: #09090b;
+  --color-lofi-surface: #18181b;
+  --color-lofi-border: #27272a;
+  --color-lofi-muted: #3f3f46;
+  --color-lofi-secondary: #94a3b8;
+  --color-lofi-text: #e4e4e7;
+  --color-lofi-accent: #f97316;
+
+  /* Champion cost tier colors */
+  --color-cost-1: #94a3b8;
+  --color-cost-2: #22c55e;
+  --color-cost-3: #3b82f6;
+  --color-cost-4: #a855f7;
+  --color-cost-5: #eab308;
+
+  /* Font family */
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono",
+    Menlo, Consolas, monospace;
+}
+
+* {
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-lofi-black);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-lofi-muted);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-lofi-secondary);
+}

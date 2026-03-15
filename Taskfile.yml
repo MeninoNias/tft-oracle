@@ -128,12 +128,12 @@ tasks:
   migrate:up:
     desc: Run database migrations
     cmds:
-      - echo "Migration tool not yet configured — see issue #3"
+      - migrate -path migrations -database "$DATABASE_URL" up
 
   migrate:down:
     desc: Rollback last migration
     cmds:
-      - echo "Migration tool not yet configured — see issue #3"
+      - migrate -path migrations -database "$DATABASE_URL" down 1
 
   # ========================
   # Build
