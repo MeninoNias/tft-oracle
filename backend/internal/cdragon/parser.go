@@ -116,10 +116,14 @@ func Parse(data *CDragonData) *ParsedSet {
 		})
 	}
 
-	// Parse champions
+	// Parse champions (filter non-playable units: monsters, anvils, summons)
 	champions := make([]ParsedChampion, 0, len(setData.Champions))
 	for _, c := range setData.Champions {
 		traitAPINames := resolveTraitNames(c.Traits, traitDisplayToAPI)
+
+		if !isPlayableChampion(c.Cost, traitAPINames) {
+			continue
+		}
 
 		ability := ParsedAbility{
 			Name:    c.Ability.Name,
@@ -186,6 +190,16 @@ func resolveTraitNames(displayNames []string, displayToAPI map[string]string) []
 		}
 	}
 	return result
+}
+
+// isPlayableChampion returns true if a champion is a real playable unit.
+// Non-playable entities leak through CommunityDragon data as:
+//   - PvE monsters/dummies (cost 1, but 0 traits)
+//   - Item anvils (cost 8)
+//   - Summons/minions (cost 11)
+func isPlayableChampion(cost int, resolvedTraits []string) bool {
+	// Real champions cost 1-5 and always have at least one trait.
+	return cost >= 1 && cost <= 5 && len(resolvedTraits) > 0
 }
 
 // filterItems filters the global items list for items belonging to the current set.
