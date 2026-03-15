@@ -212,7 +212,7 @@ func filterItems(allItems []CDragonItem, setMutator string, setNumber int) []Par
 	for _, item := range allItems {
 		apiLower := strings.ToLower(item.APIName)
 
-		if !isRealItem(apiLower, setPrefix) {
+		if !isRealItem(apiLower, setPrefix, item.Name) {
 			continue
 		}
 
@@ -238,11 +238,64 @@ func filterItems(allItems []CDragonItem, setMutator string, setNumber int) []Par
 //   - Base items: "tft_item_*" (components + universally crafted items)
 //   - Set items:  "tft{N}_item_*" (set-specific items, e.g. "tft16_item_*")
 //
-// Everything else (augments, assists, consumables, events, tutorials,
-// champion mechanics) is filtered out.
-func isRealItem(apiNameLower string, setItemPrefix string) bool {
-	return strings.HasPrefix(apiNameLower, "tft_item_") ||
-		strings.HasPrefix(apiNameLower, setItemPrefix)
+// Within those prefixes, several sub-patterns are excluded:
+//   - Grant*: loot drop mechanics (GrantComponent, GrantOrbs, GrantCompletedItem, etc.)
+//   - Debug*: debug/test items
+//   - Free*:  free component duplicates (FreeBFSword, etc.)
+//   - *Copy*: internal duplicates (ThiefsGloves_AcademyCopy)
+//   - Blank/EmptyBag: placeholder items
+//   - Piltover_*/Bilgewater_*: region-specific champion mechanics (not equippable)
+//   - ChampionItem_*: champion-specific internal items
+//
+// Items with empty names or unresolved @variable@ templates are also excluded.
+func isRealItem(apiNameLower string, setItemPrefix string, name string) bool {
+	if !strings.HasPrefix(apiNameLower, "tft_item_") &&
+		!strings.HasPrefix(apiNameLower, setItemPrefix) {
+		return false
+	}
+
+	// Exclude items with empty, template, or unlocalized names.
+	// Unlocalized names look like "tft_item_name_*" or "game_item_displayname_*".
+	if name == "" || strings.Contains(name, "@") {
+		return false
+	}
+	nameLower := strings.ToLower(name)
+	if strings.HasPrefix(nameLower, "tft_item_") || strings.HasPrefix(nameLower, "game_item_") {
+		return false
+	}
+
+	// Deny-list: non-equippable sub-patterns within tft_item_ / tft{N}_item_
+	denyPrefixes := []string{
+		"tft_item_grant",
+		"tft_item_debug",
+		"tft_item_free",
+		"tft_item_blank",
+		"tft_item_emptybag",
+	}
+	for _, prefix := range denyPrefixes {
+		if strings.HasPrefix(apiNameLower, prefix) {
+			return false
+		}
+	}
+
+	// Deny sub-patterns within set items (e.g. tft16_item_piltover_, tft16_item_bilgewater_)
+	setDenyContains := []string{
+		"_piltover_",
+		"_bilgewater_",
+		"_championitem_",
+	}
+	for _, substr := range setDenyContains {
+		if strings.Contains(apiNameLower, substr) {
+			return false
+		}
+	}
+
+	// Deny internal copies
+	if strings.Contains(apiNameLower, "copy") {
+		return false
+	}
+
+	return true
 }
 
 // hasSetNumber checks if an item apiName contains a set number suffix (e.g., TFT9_, TFT13_).
