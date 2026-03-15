@@ -213,35 +213,47 @@ func TestIsRealItem(t *testing.T) {
 	tests := []struct {
 		name     string
 		apiName  string
+		itemName string
 		expected bool
 	}{
 		// Real items — should pass
-		{"base component", "tft_item_bfsword", true},
-		{"base crafted item", "tft_item_guinsoosrageblade", true},
-		{"set-specific item", "tft16_item_specialweapon", true},
+		{"base component", "tft_item_bfsword", "B.F. Sword", true},
+		{"base crafted item", "tft_item_guinsoosrageblade", "Guinsoo's Rageblade", true},
+		{"set-specific item", "tft16_item_specialweapon", "Special Weapon", true},
+		{"artifact item", "tft_item_artifact_blightingjewel", "Blighting Jewel", true},
+		{"set emblem", "tft16_item_sorcereremblemitem", "Arcanist Emblem", true},
 
 		// Non-items — should be filtered
-		{"generic augment", "tft_augment_cyberbuff", false},
-		{"set augment", "tft16_augment_somebuff", false},
-		{"teamup augment", "tft16_teamupaugment_duo", false},
-		{"assist gold", "tft_assist_gold_1", false},
-		{"assist rerolls", "tft_assist_rerolls_11", false},
-		{"generic consumable", "tft_consumable_something", false},
-		{"set consumable", "tft16_consumable_something", false},
-		{"explorer reward", "tft16_explorer_reward", false},
-		{"champion mechanic", "tft16_championitem_special", false},
-		{"xerath mechanic", "tft16_xerathzap_damage", false},
-		{"event item", "tftevent_5yr_item_something", false},
-		{"tutorial augment", "tfttutorial_augment_something", false},
-		{"other set item", "tft9_item_oldsword", false},
-		{"armory key", "tft_armorykey_component", false},
+		{"generic augment", "tft_augment_cyberbuff", "Cyber Buff", false},
+		{"set augment", "tft16_augment_somebuff", "Some Buff", false},
+		{"teamup augment", "tft16_teamupaugment_duo", "Duo Buff", false},
+		{"assist gold", "tft_assist_gold_1", "1 Gold", false},
+		{"grant component", "tft_item_grantcomponent1", "1 component", false},
+		{"grant orbs", "tft_item_grantorbs5", "@OrbsToGive@ loot orbs", false},
+		{"grant completed", "tft_item_grantcompleteditem2", "@ItemsToGive@ completed items", false},
+		{"grant anvil", "tft_item_grantcomponentanvil", "Component Anvil", false},
+		{"debug item", "tft_item_debugbase", "Debug Base", false},
+		{"debug damage", "tft_item_debugdamage", "Debug Damage", false},
+		{"free component", "tft_item_freebfsword", "B.F. Sword", false},
+		{"blank item", "tft_item_blank", "", false},
+		{"empty bag", "tft_item_emptybag", "", false},
+		{"copy item", "tft_item_thiefsgloves_academycopy", "Thief's Gloves", false},
+		{"piltover mechanic", "tft16_item_piltover_accelerationgate", "Acceleration Gate", false},
+		{"bilgewater mechanic", "tft16_item_bilgewater_deadmansdagger", "Dead Man's Dagger", false},
+		{"champion item", "tft16_championitem_special", "Special", false},
+		{"template name", "tft_item_something", "@ItemsToGive@ stuff", false},
+		{"empty name", "tft_item_something", "", false},
+		{"unlocalized tft name", "tft_item_cursedblade", "tft_item_name_CursedBlade", false},
+		{"unlocalized game name", "tft_item_mortalreminder", "game_item_displayname_3033", false},
+		{"other set item", "tft9_item_oldsword", "Old Sword", false},
+		{"armory key", "tft_armorykey_component", "Component", false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := isRealItem(tt.apiName, setItemPrefix)
+			got := isRealItem(tt.apiName, setItemPrefix, tt.itemName)
 			if got != tt.expected {
-				t.Errorf("isRealItem(%q, %q) = %v, want %v", tt.apiName, setItemPrefix, got, tt.expected)
+				t.Errorf("isRealItem(%q, %q, %q) = %v, want %v", tt.apiName, setItemPrefix, tt.itemName, got, tt.expected)
 			}
 		})
 	}

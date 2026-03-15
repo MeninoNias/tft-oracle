@@ -18,11 +18,13 @@ import (
 	"golang.org/x/net/http2/h2c"
 
 	"github.com/MeninoNias/tft-oracle/backend/gen/tft/v1/tftv1connect"
+	"github.com/MeninoNias/tft-oracle/backend/internal/cache"
 	"github.com/MeninoNias/tft-oracle/backend/internal/cdragon"
 	"github.com/MeninoNias/tft-oracle/backend/internal/config"
 	"github.com/MeninoNias/tft-oracle/backend/internal/database"
 	"github.com/MeninoNias/tft-oracle/backend/internal/patch"
 	"github.com/MeninoNias/tft-oracle/backend/internal/player"
+	"github.com/MeninoNias/tft-oracle/backend/internal/riot"
 )
 
 func main() {
@@ -71,6 +73,31 @@ func main() {
 		}
 	}
 
+	// Redis (optional)
+	var cacheClient *cache.Client
+	if cfg.RedisURL != "" {
+		var err error
+		cacheClient, err = cache.NewClient(cfg.RedisURL)
+		if err != nil {
+			log.Printf("warning: redis connection failed: %v (continuing without cache)", err)
+		} else if cacheClient != nil {
+			log.Println("redis: connected")
+			defer cacheClient.Close()
+		}
+	}
+
+	// Riot API client
+	riotClient := riot.NewClient(cfg.RiotAPIKey)
+	if riotClient.Available() {
+		if err := riotClient.HealthCheck(ctx); err != nil {
+			log.Printf("riot api: WARNING — key validation failed: %v", err)
+		} else {
+			log.Println("riot api: key valid")
+		}
+	} else {
+		log.Println("riot api: not configured (player features disabled)")
+	}
+
 	// Set up Connect RPC handlers
 	mux := http.NewServeMux()
 
@@ -83,7 +110,7 @@ func main() {
 	mux.Handle(patchPath, patchHandler)
 
 	playerPath, playerHandler := tftv1connect.NewPlayerServiceHandler(
-		player.NewService(),
+		player.NewService(pool, riotClient, cacheClient),
 		interceptors,
 	)
 	mux.Handle(playerPath, playerHandler)
@@ -123,10 +150,10 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	// Graceful shutdown
+	// Graceful shutdown (os.Interrupt works reliably on Windows)
 	go func() {
 		sigCh := make(chan os.Signal, 1)
-		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+		signal.Notify(sigCh, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 		<-sigCh
 		log.Println("shutting down...")
 		cancel()

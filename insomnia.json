@@ -73,7 +73,7 @@
       "_id": "req_get_player_profile",
       "_type": "request",
       "parentId": "fld_player",
-      "name": "GetPlayerProfile (unimplemented)",
+      "name": "GetPlayerProfile",
       "method": "POST",
       "url": "{{ _.base_url }}/tft.v1.PlayerService/GetPlayerProfile",
       "headers": [
@@ -81,14 +81,14 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"gameName\": \"MeninoNias\",\n  \"tagLine\": \"BR1\",\n  \"region\": \"americas\"\n}"
+        "text": "{\n  \"gameName\": \"pai de olivia\",\n  \"tagLine\": \"NIAS\",\n  \"region\": \"br\"\n}"
       }
     },
     {
       "_id": "req_get_match_history",
       "_type": "request",
       "parentId": "fld_player",
-      "name": "GetMatchHistory (unimplemented)",
+      "name": "GetMatchHistory",
       "method": "POST",
       "url": "{{ _.base_url }}/tft.v1.PlayerService/GetMatchHistory",
       "headers": [
@@ -96,7 +96,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"puuid\": \"some-puuid\",\n  \"region\": \"americas\",\n  \"count\": 20\n}"
+        "text": "{\n  \"puuid\": \"gAI2DzIlT48o_0ebAl5epBUqxikAjDxNOJx9VB9GScjzgWACEdxX3wD1qhTX9IpOb6i5IEChRMgofw\",\n  \"region\": \"br\",\n  \"count\": 5\n}"
       }
     }
   ]

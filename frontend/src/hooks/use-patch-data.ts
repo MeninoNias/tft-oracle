@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { patchClient } from "../lib/transport";
+import { patchClient } from "@/lib/transport";
 
 export function usePatchData(setNumber = 0) {
   return useQuery({

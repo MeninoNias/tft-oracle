@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react";
-import { usePatchData } from "../hooks/use-patch-data";
-import { SectionHeader } from "../components/layout/section-header";
-import { SearchFilterBar } from "../components/search-filter-bar";
-import { ItemCard } from "../components/item-card";
-import { Skeleton } from "../components/ui/skeleton";
+import { usePatchData } from "@/hooks/use-patch-data";
+import { SectionHeader } from "@/components/layout/section-header";
+import { SearchFilterBar } from "@/components/search-filter-bar";
+import { ItemCard } from "@/components/item-card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const typeFilters = [
   { label: "component", value: "component" },
