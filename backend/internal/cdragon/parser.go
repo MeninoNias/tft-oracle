@@ -202,40 +202,18 @@ func isPlayableChampion(cost int, resolvedTraits []string) bool {
 	return cost >= 1 && cost <= 5 && len(resolvedTraits) > 0
 }
 
-// filterItems filters the global items list for items belonging to the current set.
+// filterItems filters the global items list, keeping only real equipable items
+// for the current set. Non-item entries (augments, assists, consumables, events,
+// tutorials, champion mechanics) are excluded via an allow-list approach.
 func filterItems(allItems []CDragonItem, setMutator string, setNumber int) []ParsedItem {
 	items := make([]ParsedItem, 0)
-	setTag := strings.ToLower(setMutator)
+	setPrefix := strings.ToLower("tft" + itoa(setNumber) + "_item_")
 
 	for _, item := range allItems {
-		// Include base items (no set-specific tag needed) and set-specific items.
-		// Items are included if they have no "Set" prefix in apiName OR if they match current set.
 		apiLower := strings.ToLower(item.APIName)
 
-		// Skip items from other sets
-		if strings.HasPrefix(apiLower, "tft") {
-			// Check if it belongs to a different set number
-			belongsToCurrentSet := false
-
-			// Base TFT items (e.g., "TFT_Item_BFSword") belong to all sets
-			if !hasSetNumber(apiLower) {
-				belongsToCurrentSet = true
-			}
-
-			// Set-specific items contain the set identifier
-			if setTag != "" && strings.Contains(apiLower, strings.ToLower(setTag)) {
-				belongsToCurrentSet = true
-			}
-
-			// Also check for set number in the apiName (e.g., "TFT13_...")
-			setPrefix := strings.ToLower("TFT" + itoa(setNumber))
-			if strings.HasPrefix(apiLower, setPrefix+"_") {
-				belongsToCurrentSet = true
-			}
-
-			if !belongsToCurrentSet {
-				continue
-			}
+		if !isRealItem(apiLower, setPrefix) {
+			continue
 		}
 
 		items = append(items, ParsedItem{
@@ -253,6 +231,18 @@ func filterItems(allItems []CDragonItem, setMutator string, setNumber int) []Par
 	}
 
 	return items
+}
+
+// isRealItem returns true if the apiName represents a real equipable item.
+// Real items follow two patterns:
+//   - Base items: "tft_item_*" (components + universally crafted items)
+//   - Set items:  "tft{N}_item_*" (set-specific items, e.g. "tft16_item_*")
+//
+// Everything else (augments, assists, consumables, events, tutorials,
+// champion mechanics) is filtered out.
+func isRealItem(apiNameLower string, setItemPrefix string) bool {
+	return strings.HasPrefix(apiNameLower, "tft_item_") ||
+		strings.HasPrefix(apiNameLower, setItemPrefix)
 }
 
 // hasSetNumber checks if an item apiName contains a set number suffix (e.g., TFT9_, TFT13_).
