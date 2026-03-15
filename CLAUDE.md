@@ -11,17 +11,26 @@ TFT Oracle is an ultra-lightweight desktop app (~50MB RAM) that acts as an AI-po
 ## Architecture
 
 ```
-┌──────────────────┐     gRPC/Connect     ┌──────────────────┐
-│   Tauri v2 App   │◄───────────────────►│   Go Backend     │
-│   React + Vite   │                      │   (Goroutines)   │
-│   TailwindCSS    │                      │                  │
-└──────────────────┘                      ├──────────────────┤
-                                          │  PostgreSQL      │
-                                          │  Redis (Phase 2) │
-                                          │  OpenAI API      │
-                                          │  Riot API        │
-                                          └──────────────────┘
+┌─────────────────────────────────┐
+│          Tauri v2 (Rust)        │  ← Window shell only, minimal logic
+│  ┌───────────────────────────┐  │
+│  │    React + Vite (WebView) │  │     HTTP + JSON (Connect RPC)
+│  │    TanStack Query hooks   │──────────────────────────►  Go Backend :8080
+│  │    Zustand (client state) │  │     (NOT raw gRPC — browser compatible)
+│  └───────────────────────────┘  │
+└─────────────────────────────────┘
+                                        ┌──────────────────┐
+                                        │  Go Backend      │
+                                        │  Connect RPC     │
+                                        ├──────────────────┤
+                                        │  PostgreSQL      │
+                                        │  Redis (Phase 2) │
+                                        │  OpenAI API      │
+                                        │  Riot API        │
+                                        └──────────────────┘
 ```
+
+**Communication flow:** React (inside Tauri's webview) calls Go backend directly via HTTP+JSON using Connect RPC. Tauri is just the desktop window — it does NOT proxy or relay API calls. Connect RPC is used instead of raw gRPC because browsers/webviews cannot speak gRPC's HTTP/2 binary protocol.
 
 ### Stack
 
@@ -32,29 +41,33 @@ TFT Oracle is an ultra-lightweight desktop app (~50MB RAM) that acts as an AI-po
 | State | TanStack Query + Zustand | Cache + client state |
 | DnD | @dnd-kit | Phase 3 board builder |
 | Backend | Go + Connect RPC (Buf) | Protobuf contracts → auto-generated React hooks |
-| DB access | sqlc + pgx | Compiled SQL, no ORM |
+| Communication | Connect RPC (HTTP+JSON) | NOT raw gRPC — browser/webview compatible |
+| DB access | sqlc + pgx | Compiled SQL, no ORM (see ADR below) |
 | Database | PostgreSQL v16+ | Relational storage |
 | Cache | Redis | Riot API rate limits (Phase 2+) |
 | AI | OpenAI GPT-4o-mini | Structured Outputs (JSON Schema) |
 | Data sync | CommunityDragon | Game data (champions, items, traits) |
 | Crawler | Go (Goroutines) | MetaTFT, TFTactics, Mobalytics (Phase 4) |
 
-## Project Structure (planned)
+## Project Structure
 
 ```
 tft-oracle/
 ├── proto/                  # Protobuf contracts (.proto files)
+│   └── tft/v1/
+│       ├── patch.proto     # PatchService — champions, items, traits (CommunityDragon)
+│       └── player.proto    # PlayerService — profile, ranked, match history (Riot API)
 ├── backend/                # Go backend (Connect RPC server)
 │   ├── cmd/server/         # Entry point
 │   ├── internal/           # Business logic
-│   ├── gen/                # Generated protobuf code
+│   ├── gen/                # Generated protobuf code (gitignored)
 │   └── sqlc/               # Generated SQL queries
 ├── frontend/               # React + Vite app
 │   ├── src/
 │   │   ├── components/     # UI components
 │   │   ├── hooks/          # Custom hooks
 │   │   ├── stores/         # Zustand stores
-│   │   └── gen/            # Generated Connect-Query hooks
+│   │   └── gen/            # Generated Connect-Query hooks (gitignored)
 │   └── index.html
 ├── src-tauri/              # Tauri v2 Rust shell
 ├── migrations/             # PostgreSQL migrations
@@ -131,6 +144,24 @@ sqlc generate                               # Generate Go from SQL queries
 - Run `sqlc generate` to produce type-safe Go code
 - Never write raw SQL strings in Go code
 
+## Architecture Decision Records (ADRs)
+
+### ADR-1: Connect RPC instead of raw gRPC
+
+Tauri's webview is a browser — browsers cannot speak raw gRPC (HTTP/2 binary protocol). Connect RPC speaks HTTP/1.1 + JSON natively, so React calls the Go backend directly with no proxy. Connect RPC is fully compatible with gRPC clients and uses the same `.proto` contracts.
+
+### ADR-2: sqlc instead of ORM (GORM)
+
+GORM is Go's most popular ORM, but we use sqlc because:
+- **Performance**: sqlc generates plain Go functions at build time — no reflection, no model caching, no hidden queries. Critical for the ~50MB RAM target.
+- **Transparency**: you write the exact SQL that runs. No N+1 surprises, no "what query did the ORM generate?"
+- **Type safety**: sqlc catches errors at compile time, not runtime.
+- **Simplicity**: our queries are straightforward (get champions, store matches) — an ORM adds complexity with zero benefit here.
+
+### ADR-3: Tauri as window shell only
+
+Tauri (Rust) only manages the desktop window and process lifecycle. All business logic lives in the Go backend. React talks to Go directly — Tauri does NOT proxy or relay API calls. This keeps the Rust layer minimal and avoids duplicating logic.
+
 ## Key Constraints
 
 - **Performance**: Must stay under ~50MB RAM with zero FPS impact during gameplay
@@ -138,9 +169,34 @@ sqlc generate                               # Generate Go from SQL queries
 - **Out of MVP scope**: No memory/screen reading (Vanguard anti-cheat risk), no auto lobby detection (manual Riot ID), no deterministic combat sim (AI heuristics instead)
 - **Security**: Never commit API keys (.env files). Riot API key, OpenAI key, and DB credentials go in environment variables only.
 
+## Data Architecture
+
+The `apiName` field is the universal join key across all data sources:
+
+| CommunityDragon | Riot API | Join |
+|-----------------|----------|------|
+| `Champion.api_name` | `MatchUnit.character_id` | Champion identity |
+| `Item.api_name` | `MatchUnit.item_names[]` | Item identity |
+| `Trait.api_name` | `MatchTrait.api_name` | Trait identity |
+| Augment `api_name` (in items) | `Participant.augments[]` | Augment identity |
+
+### Protobuf Services
+
+| Service | Proto | Phase | Data Source |
+|---------|-------|-------|-------------|
+| `PatchService.GetPatchData` | `proto/tft/v1/patch.proto` | 1 | CommunityDragon |
+| `PlayerService.GetPlayerProfile` | `proto/tft/v1/player.proto` | 2 | Riot API |
+| `PlayerService.GetMatchHistory` | `proto/tft/v1/player.proto` | 2 | Riot API |
+
 ## Key Files
 
 - `docs/SPEC.md` — Full technical specification (Portuguese)
+- `docs/DATA_SOURCES.md` — Complete external data source mapping (CommunityDragon, Riot API, Scrapers)
+- `docs/ARCHITECTURE_DECISIONS.md` — ADRs: Connect RPC vs gRPC, sqlc vs ORM, Tauri role, Protobuf contracts
+- `proto/tft/v1/patch.proto` — PatchService contract (champions, items, traits)
+- `proto/tft/v1/player.proto` — PlayerService contract (profile, ranked, matches)
+- `buf.yaml` / `buf.gen.yaml` — Buf configuration for code generation
+- `Taskfile.yml` — Task runner (generate, lint, dev, build)
 - `.github/ISSUE_TEMPLATE/` — Bug report and feature request templates
 - `.github/pull_request_template.md` — PR template with checklist
 - `.github/CONTRIBUTING.md` — Contribution guide with conventions

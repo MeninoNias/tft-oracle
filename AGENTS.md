@@ -19,8 +19,9 @@ Instructions for AI agents (Claude Code, Copilot, Cursor, etc.) working on this 
 - All DB access goes through sqlc — never write raw SQL in Go.
 - Use `internal/` packages for business logic. Keep `cmd/` thin.
 - Wrap errors with context: `fmt.Errorf("fetchChampions: %w", err)`.
-- Use Connect RPC handlers, not raw HTTP handlers.
+- Use Connect RPC handlers, not raw HTTP handlers. Connect RPC speaks HTTP+JSON (not raw gRPC) so the browser/webview can call it directly.
 - Protobuf types are the API contract — do not create parallel DTOs.
+- No ORMs (GORM, etc.) — sqlc generates type-safe Go from raw SQL. Zero reflection, zero runtime overhead.
 
 ### TypeScript/React (frontend/)
 
@@ -36,6 +37,9 @@ Instructions for AI agents (Claude Code, Copilot, Cursor, etc.) working on this 
 - Run `buf lint` before committing any `.proto` changes.
 - Run `buf generate` after modifying protos to regenerate Go + TypeScript code.
 - Never hand-edit files in `backend/gen/` or `frontend/src/gen/`.
+- The `apiName` field is the universal join key across CommunityDragon and Riot API data.
+- Two services defined: `PatchService` (static game data) and `PlayerService` (player data).
+- See `docs/DATA_SOURCES.md` for the complete field mapping from external sources to proto messages.
 
 ### SQL (migrations/, backend/sqlc/)
 
@@ -58,9 +62,11 @@ Instructions for AI agents (Claude Code, Copilot, Cursor, etc.) working on this 
 
 ## What NOT to Do
 
-- Do not add ORMs (GORM, Prisma, etc.) — this project uses sqlc.
+- Do not add ORMs (GORM, Prisma, etc.) — this project uses sqlc for compile-time SQL generation (ADR-2).
 - Do not add Electron or Overwolf — this project uses Tauri.
-- Do not add REST endpoints — this project uses Connect RPC (gRPC).
+- Do not add REST endpoints — this project uses Connect RPC with Protobuf contracts (ADR-1).
+- Do not use raw gRPC — Connect RPC is used because Tauri's webview (browser) cannot speak HTTP/2 binary.
+- Do not route API calls through Tauri/Rust — React calls Go backend directly via HTTP (ADR-3).
 - Do not add Redux, MobX, or Recoil — this project uses Zustand + TanStack Query.
 - Do not read game memory or screen pixels — Vanguard anti-cheat risk.
 - Do not auto-detect lobbies via LCU API — users input Riot ID manually.
@@ -70,6 +76,9 @@ Instructions for AI agents (Claude Code, Copilot, Cursor, etc.) working on this 
 ## Project Context
 
 - Full spec: `docs/SPEC.md` (Portuguese)
+- Data source mapping: `docs/DATA_SOURCES.md` (CommunityDragon, Riot API, Scrapers)
+- Architecture decisions: `docs/ARCHITECTURE_DECISIONS.md` (ADR-1 to ADR-4)
 - Architecture and commands: `CLAUDE.md`
-- 4 development phases tracked via GitHub milestones (#1-#24)
+- Protobuf contracts: `proto/tft/v1/patch.proto`, `proto/tft/v1/player.proto`
+- 4 development phases tracked via GitHub milestones (#1-#30)
 - Target: ~50MB RAM, zero FPS impact during TFT gameplay
