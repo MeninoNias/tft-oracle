@@ -15,7 +15,8 @@
       "parentId": "wrk_tft_oracle",
       "name": "Base Environment",
       "data": {
-        "base_url": "http://localhost:8080"
+        "base_url": "http://localhost:8080",
+        "session_token": ""
       }
     },
     {
@@ -24,8 +25,15 @@
       "parentId": "env_base",
       "name": "Local",
       "data": {
-        "base_url": "http://localhost:8080"
+        "base_url": "http://localhost:8080",
+        "session_token": ""
       }
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "parentId": "wrk_tft_oracle",
+      "name": "AuthService"
     },
     {
       "_id": "fld_patch",
@@ -38,6 +46,52 @@
       "_type": "request_group",
       "parentId": "wrk_tft_oracle",
       "name": "PlayerService"
+    },
+    {
+      "_id": "req_register",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Register",
+      "method": "POST",
+      "url": "{{ _.base_url }}/tft.v1.AuthService/Register",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"gameName\": \"pai de olivia\",\n  \"tagLine\": \"NIAS\",\n  \"region\": \"br\"\n}"
+      }
+    },
+    {
+      "_id": "req_login",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Login",
+      "method": "POST",
+      "url": "{{ _.base_url }}/tft.v1.AuthService/Login",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"accessKey\": \"paste-your-access-key-here\"\n}"
+      }
+    },
+    {
+      "_id": "req_get_current_user",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "GetCurrentUser (requires JWT)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/tft.v1.AuthService/GetCurrentUser",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.session_token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{}"
+      }
     },
     {
       "_id": "req_get_patch_data",
