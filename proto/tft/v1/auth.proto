@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package tft.v1;
+
+option go_package = "github.com/MeninoNias/tft-oracle/backend/gen/tft/v1;tftv1";
+
+// AuthService handles user registration and authentication.
+// Users authenticate via a randomly generated access key tied to their Riot ID.
+service AuthService {
+  // Register creates a new user by verifying their Riot ID and generating an access key.
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  // Login validates an access key and returns a JWT session token.
+  rpc Login(LoginRequest) returns (LoginResponse);
+  // GetCurrentUser returns the authenticated user's profile.
+  rpc GetCurrentUser(GetCurrentUserRequest) returns (GetCurrentUserResponse);
+}
+
+// --- Register ---
+
+message RegisterRequest {
+  string game_name = 1;
+  string tag_line = 2;
+  // Server code: "br", "na", "euw", "kr", etc.
+  string region = 3;
+}
+
+message RegisterResponse {
+  // The access key — shown to the user ONCE. Must be copied and saved.
+  string access_key = 1;
+  User user = 2;
+}
+
+// --- Login ---
+
+message LoginRequest {
+  string access_key = 1;
+}
+
+message LoginResponse {
+  // JWT session token (30-day expiry by default).
+  string session_token = 1;
+  User user = 2;
+}
+
+// --- GetCurrentUser ---
+
+message GetCurrentUserRequest {}
+
+message GetCurrentUserResponse {
+  User user = 1;
+}
+
+// --- User ---
+
+message User {
+  string id = 1;
+  string game_name = 2;
+  string tag_line = 3;
+  string region = 4;
+  string puuid = 5;
+}
