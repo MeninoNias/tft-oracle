@@ -18,6 +18,7 @@ import (
 	"golang.org/x/net/http2/h2c"
 
 	"github.com/MeninoNias/tft-oracle/backend/gen/tft/v1/tftv1connect"
+	"github.com/MeninoNias/tft-oracle/backend/internal/auth"
 	"github.com/MeninoNias/tft-oracle/backend/internal/cache"
 	"github.com/MeninoNias/tft-oracle/backend/internal/cdragon"
 	"github.com/MeninoNias/tft-oracle/backend/internal/config"
@@ -98,10 +99,26 @@ func main() {
 		log.Println("riot api: not configured (player features disabled)")
 	}
 
+	// Auth (optional — works without JWT_SECRET, but auth endpoints return errors)
+	var jwtMgr *auth.JWTManager
+	if cfg.JWTSecret != "" {
+		var err error
+		jwtMgr, err = auth.NewJWTManager(cfg.JWTSecret, cfg.JWTExpiry)
+		if err != nil {
+			log.Fatalf("failed to init JWT: %v", err)
+		}
+		log.Println("auth: JWT configured")
+	} else {
+		log.Println("auth: JWT_SECRET not set — auth features disabled")
+	}
+
 	// Set up Connect RPC handlers
 	mux := http.NewServeMux()
 
-	interceptors := connect.WithInterceptors(newLoggingInterceptor())
+	interceptors := connect.WithInterceptors(
+		auth.NewAuthInterceptor(jwtMgr),
+		newLoggingInterceptor(),
+	)
 
 	patchPath, patchHandler := tftv1connect.NewPatchServiceHandler(
 		patch.NewService(pool),
@@ -114,6 +131,12 @@ func main() {
 		interceptors,
 	)
 	mux.Handle(playerPath, playerHandler)
+
+	authPath, authHandler := tftv1connect.NewAuthServiceHandler(
+		auth.NewService(pool, riotClient, jwtMgr),
+		interceptors,
+	)
+	mux.Handle(authPath, authHandler)
 
 	// CORS configuration
 	corsHandler := cors.New(cors.Options{
@@ -128,6 +151,7 @@ func main() {
 			http.MethodOptions,
 		},
 		AllowedHeaders: []string{
+			"Authorization",
 			"Content-Type",
 			"Connect-Protocol-Version",
 			"Connect-Timeout-Ms",
