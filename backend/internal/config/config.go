@@ -15,6 +15,10 @@ type Config struct {
 	// Phase 2: Riot API & Redis
 	RiotAPIKey string
 	RedisURL   string
+
+	// Auth
+	JWTSecret string
+	JWTExpiry string // duration string, e.g. "720h" for 30 days
 }
 
 func Load() (*Config, error) {
@@ -26,6 +30,8 @@ func Load() (*Config, error) {
 		LogLevel:    getEnv("LOG_LEVEL", "debug"),
 		RiotAPIKey:  getEnv("RIOT_API_KEY", ""),
 		RedisURL:    getEnv("REDIS_URL", "redis://localhost:6379"),
+		JWTSecret:   getEnv("JWT_SECRET", ""),
+		JWTExpiry:   getEnv("JWT_EXPIRY", "720h"),
 	}
 
 	if cfg.DatabaseURL == "" {
