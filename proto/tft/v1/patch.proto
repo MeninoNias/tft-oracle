@@ -23,6 +23,7 @@ message GetPatchDataResponse {
   repeated Champion champions = 2;
   repeated Item items = 3;
   repeated Trait traits = 4;
+  repeated Item augments = 5;
 }
 
 // --- Set Metadata ---

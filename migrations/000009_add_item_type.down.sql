@@ -1,0 +1,2 @@
+DROP INDEX IF EXISTS idx_items_type;
+ALTER TABLE items DROP COLUMN IF EXISTS type;

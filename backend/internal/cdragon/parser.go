@@ -14,6 +14,7 @@ type ParsedSet struct {
 	Champions []ParsedChampion
 	Traits    []ParsedTrait
 	Items     []ParsedItem
+	Augments  []ParsedItem
 }
 
 type ParsedChampion struct {
@@ -162,6 +163,9 @@ func Parse(data *CDragonData) *ParsedSet {
 	setPrefix := strings.ToLower(setData.Mutator)
 	items := filterItems(data.Items, setPrefix, setData.Number)
 
+	// Filter augments for current set
+	augments := filterAugments(data.Items, setData.Number)
+
 	return &ParsedSet{
 		Number:    setData.Number,
 		Name:      setData.Name,
@@ -169,6 +173,7 @@ func Parse(data *CDragonData) *ParsedSet {
 		Champions: champions,
 		Traits:    traits,
 		Items:     items,
+		Augments:  augments,
 	}
 }
 
@@ -296,6 +301,64 @@ func isRealItem(apiNameLower string, setItemPrefix string, name string) bool {
 	}
 
 	return true
+}
+
+// filterAugments extracts augments from the global items list.
+// Augments have apiNames matching: "TFT_Augment_*" or "TFT{N}_Augment_*"
+// Items with empty names or unlocalized template names are excluded.
+func filterAugments(allItems []CDragonItem, setNumber int) []ParsedItem {
+	augments := make([]ParsedItem, 0)
+	setAugPrefix := strings.ToLower("tft" + itoa(setNumber) + "_augment_")
+
+	for _, item := range allItems {
+		apiLower := strings.ToLower(item.APIName)
+
+		if !strings.HasPrefix(apiLower, "tft_augment_") &&
+			!strings.HasPrefix(apiLower, setAugPrefix) {
+			continue
+		}
+
+		// Skip empty or unlocalized names
+		if item.Name == "" || strings.Contains(item.Name, "@") {
+			continue
+		}
+		nameLower := strings.ToLower(item.Name)
+		if strings.HasPrefix(nameLower, "tft_") || strings.HasPrefix(nameLower, "game_") {
+			continue
+		}
+
+		composition := item.Composition
+		if composition == nil {
+			composition = []string{}
+		}
+		assocTraits := item.AssociatedTraits
+		if assocTraits == nil {
+			assocTraits = []string{}
+		}
+		incompTraits := item.IncompatibleTraits
+		if incompTraits == nil {
+			incompTraits = []string{}
+		}
+		tags := item.Tags
+		if tags == nil {
+			tags = []string{}
+		}
+
+		augments = append(augments, ParsedItem{
+			APIName:            item.APIName,
+			Name:               item.Name,
+			Desc:               item.Desc,
+			Composition:        composition,
+			Effects:            item.Effects,
+			IconURL:            ConvertIconPath(item.Icon),
+			AssociatedTraits:   assocTraits,
+			IncompatibleTraits: incompTraits,
+			Tags:               tags,
+			Unique:             item.Unique,
+		})
+	}
+
+	return augments
 }
 
 // hasSetNumber checks if an item apiName contains a set number suffix (e.g., TFT9_, TFT13_).
