@@ -9,6 +9,7 @@ import { AuthPage } from "@/pages/auth";
 import { NotFoundPage } from "@/pages/not-found";
 import { InternalErrorPage } from "@/pages/internal-error";
 import { UnauthorizedPage } from "@/pages/unauthorized";
+import { SettingsPage } from "@/pages/settings";
 import { SplashScreen } from "@/components/splash-screen";
 
 const SPLASH_KEY = "tft-oracle-splash-seen";
@@ -43,6 +44,7 @@ export function App() {
               <Route path="/items" element={<ItemsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/player" element={<PlayerPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
               <Route path="/error/500" element={<InternalErrorPage />} />
               <Route path="/error/401" element={<UnauthorizedPage />} />
               <Route path="*" element={<NotFoundPage />} />
