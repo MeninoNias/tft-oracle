@@ -7,6 +7,7 @@ const navItems = [
   { to: "/augments", label: "augments" },
   { to: "/profile", label: "profile" },
   { to: "/player", label: "player search" },
+  { to: "/settings", label: "settings" },
 ];
 
 export function Sidebar() {

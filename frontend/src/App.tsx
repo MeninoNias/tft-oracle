@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/main-layout";
 import { ChampionsPage } from "@/pages/champions";
@@ -9,8 +10,25 @@ import { NotFoundPage } from "@/pages/not-found";
 import { InternalErrorPage } from "@/pages/internal-error";
 import { UnauthorizedPage } from "@/pages/unauthorized";
 import { AugmentsPage } from "@/pages/augments";
+import { SettingsPage } from "@/pages/settings";
+import { SplashScreen } from "@/components/splash-screen";
+
+const SPLASH_KEY = "tft-oracle-splash-seen";
 
 export function App() {
+  const [showSplash, setShowSplash] = useState(
+    () => !sessionStorage.getItem(SPLASH_KEY),
+  );
+
+  const handleSplashComplete = useCallback(() => {
+    sessionStorage.setItem(SPLASH_KEY, "1");
+    setShowSplash(false);
+  }, []);
+
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+
   return (
     <Routes>
       {/* Auth page — full-screen, no sidebar */}
@@ -28,6 +46,7 @@ export function App() {
               <Route path="/augments" element={<AugmentsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/player" element={<PlayerPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
               <Route path="/error/500" element={<InternalErrorPage />} />
               <Route path="/error/401" element={<UnauthorizedPage />} />
               <Route path="*" element={<NotFoundPage />} />
