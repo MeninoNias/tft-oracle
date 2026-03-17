@@ -1,25 +1,17 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRegister, useLogin } from "@/hooks/use-auth";
-
-const servers = [
-  { value: "br", label: "BR" },
-  { value: "na", label: "NA" },
-  { value: "euw", label: "EUW" },
-  { value: "eune", label: "EUNE" },
-  { value: "kr", label: "KR" },
-  { value: "jp", label: "JP" },
-  { value: "oce", label: "OCE" },
-  { value: "lan", label: "LAN" },
-  { value: "las", label: "LAS" },
-  { value: "tr", label: "TR" },
-  { value: "ru", label: "RU" },
-];
+import { SERVERS } from "@/lib/servers";
+import { friendlyError } from "@/lib/error";
 
 export function AuthPage() {
-  const [tab, setTab] = useState<"register" | "login">("register");
+  const [searchParams] = useSearchParams();
+  const isExpired = searchParams.get("expired") === "1";
+  const [tab, setTab] = useState<"register" | "login">(
+    isExpired ? "login" : "register",
+  );
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-lofi-black">
@@ -70,6 +62,18 @@ export function AuthPage() {
             login
           </button>
         </div>
+
+        {/* Expired session banner */}
+        {isExpired && (
+          <div className="mb-4 rounded-sm border border-yellow-500/30 bg-yellow-500/10 px-4 py-3">
+            <p className="text-xs font-medium text-yellow-400">
+              session expired or invalid access key.
+            </p>
+            <p className="mt-0.5 text-[10px] text-yellow-400/70">
+              please log in again to continue.
+            </p>
+          </div>
+        )}
 
         {/* Form card */}
         <div className="rounded-lg border border-lofi-border bg-lofi-surface p-6">
@@ -204,7 +208,7 @@ function RegisterForm() {
               disabled={register.isPending}
               className="w-full rounded-sm border border-lofi-border bg-lofi-black px-3 py-1.5 text-xs text-lofi-text focus:border-lofi-accent focus:outline-none focus:ring-1 focus:ring-lofi-accent"
             >
-              {servers.map((s) => (
+              {SERVERS.map((s) => (
                 <option key={s.value} value={s.value}>
                   {s.label}
                 </option>
@@ -215,7 +219,7 @@ function RegisterForm() {
 
         {register.error && (
           <div className="rounded-sm border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
-            {register.error.message}
+            {friendlyError(register.error)}
           </div>
         )}
 
@@ -275,7 +279,7 @@ function LoginForm() {
 
         {login.error && (
           <div className="rounded-sm border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
-            {login.error.message}
+            {friendlyError(login.error)}
           </div>
         )}
 
