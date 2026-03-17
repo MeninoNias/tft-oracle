@@ -1,0 +1,18 @@
+export const SERVERS = [
+  { value: "br", label: "BR" },
+  { value: "na", label: "NA" },
+  { value: "lan", label: "LAN" },
+  { value: "las", label: "LAS" },
+  { value: "oce", label: "OCE" },
+  { value: "euw", label: "EUW" },
+  { value: "eune", label: "EUNE" },
+  { value: "tr", label: "TR" },
+  { value: "ru", label: "RU" },
+  { value: "kr", label: "KR" },
+  { value: "jp", label: "JP" },
+  { value: "ph", label: "PH" },
+  { value: "sg", label: "SG" },
+  { value: "th", label: "TH" },
+  { value: "tw", label: "TW" },
+  { value: "vn", label: "VN" },
+];

@@ -1,25 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-const servers = [
-  { value: "br", label: "BR" },
-  { value: "na", label: "NA" },
-  { value: "lan", label: "LAN" },
-  { value: "las", label: "LAS" },
-  { value: "oce", label: "OCE" },
-  { value: "euw", label: "EUW" },
-  { value: "eune", label: "EUNE" },
-  { value: "tr", label: "TR" },
-  { value: "ru", label: "RU" },
-  { value: "kr", label: "KR" },
-  { value: "jp", label: "JP" },
-  { value: "ph", label: "PH" },
-  { value: "sg", label: "SG" },
-  { value: "th", label: "TH" },
-  { value: "tw", label: "TW" },
-  { value: "vn", label: "VN" },
-];
+import { SERVERS } from "@/lib/servers";
 
 interface RiotIdFormProps {
   onSubmit: (gameName: string, tagLine: string, region: string) => void;
@@ -72,7 +54,7 @@ export function RiotIdForm({ onSubmit, isLoading }: RiotIdFormProps) {
           disabled={isLoading}
           className="w-full rounded-sm border border-lofi-border bg-lofi-black px-3 py-1.5 text-xs text-lofi-text focus:border-lofi-accent focus:outline-none focus:ring-1 focus:ring-lofi-accent"
         >
-          {servers.map((r) => (
+          {SERVERS.map((r) => (
             <option key={r.value} value={r.value}>
               {r.label}
             </option>
