@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/main-layout";
 import { ChampionsPage } from "@/pages/champions";
@@ -9,8 +10,24 @@ import { NotFoundPage } from "@/pages/not-found";
 import { InternalErrorPage } from "@/pages/internal-error";
 import { UnauthorizedPage } from "@/pages/unauthorized";
 import { SettingsPage } from "@/pages/settings";
+import { SplashScreen } from "@/components/splash-screen";
+
+const SPLASH_KEY = "tft-oracle-splash-seen";
 
 export function App() {
+  const [showSplash, setShowSplash] = useState(
+    () => !sessionStorage.getItem(SPLASH_KEY),
+  );
+
+  const handleSplashComplete = useCallback(() => {
+    sessionStorage.setItem(SPLASH_KEY, "1");
+    setShowSplash(false);
+  }, []);
+
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+
   return (
     <Routes>
       {/* Auth page — full-screen, no sidebar */}
