@@ -66,6 +66,10 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
       timers.push(setTimeout(() => addLine(i), 200 + i * 280));
     });
 
+    // Trigger "done" after last line
+    const doneDelay = 200 + bootSequence.length * 280;
+    timers.push(setTimeout(() => setPhase("done"), doneDelay));
+
     // Progress bar animation
     const progressInterval = setInterval(() => {
       setProgress((p) => {
