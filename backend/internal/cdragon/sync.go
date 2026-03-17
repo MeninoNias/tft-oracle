@@ -39,8 +39,8 @@ func (s *Syncer) Sync(ctx context.Context, locale string) error {
 		return fmt.Errorf("no current set found in cdragon data")
 	}
 
-	log.Printf("cdragon: syncing set %d (%s) — %d champions, %d traits, %d items",
-		parsed.Number, parsed.Name, len(parsed.Champions), len(parsed.Traits), len(parsed.Items))
+	log.Printf("cdragon: syncing set %d (%s) — %d champions, %d traits, %d items, %d augments",
+		parsed.Number, parsed.Name, len(parsed.Champions), len(parsed.Traits), len(parsed.Items), len(parsed.Augments))
 
 	if err := s.store(ctx, parsed); err != nil {
 		return fmt.Errorf("store cdragon data: %w", err)
@@ -220,6 +220,48 @@ func (s *Syncer) store(ctx context.Context, parsed *ParsedSet) error {
 		})
 		if err != nil {
 			return fmt.Errorf("upsert item %s: %w", item.APIName, err)
+		}
+	}
+
+	// 6. Insert augments (stored in the items table, differentiated by "augment" tag)
+	for _, aug := range parsed.Augments {
+		effectsJSON, err := json.Marshal(aug.Effects)
+		if err != nil {
+			return fmt.Errorf("marshal augment effects: %w", err)
+		}
+
+		composition := aug.Composition
+		if composition == nil {
+			composition = []string{}
+		}
+		assocTraits := aug.AssociatedTraits
+		if assocTraits == nil {
+			assocTraits = []string{}
+		}
+		incompTraits := aug.IncompatibleTraits
+		if incompTraits == nil {
+			incompTraits = []string{}
+		}
+		tags := aug.Tags
+		if tags == nil {
+			tags = []string{}
+		}
+
+		_, err = qtx.UpsertItem(ctx, generated.UpsertItemParams{
+			ApiName:            aug.APIName,
+			SetNumber:          setNumber,
+			Name:               aug.Name,
+			Description:        aug.Desc,
+			Composition:        composition,
+			Effects:            effectsJSON,
+			IconUrl:            aug.IconURL,
+			AssociatedTraits:   assocTraits,
+			IncompatibleTraits: incompTraits,
+			Tags:               tags,
+			IsUnique:           aug.Unique,
+		})
+		if err != nil {
+			return fmt.Errorf("upsert augment %s: %w", aug.APIName, err)
 		}
 	}
 
