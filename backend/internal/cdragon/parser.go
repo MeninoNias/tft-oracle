@@ -14,6 +14,7 @@ type ParsedSet struct {
 	Champions []ParsedChampion
 	Traits    []ParsedTrait
 	Items     []ParsedItem
+	Augments  []ParsedItem
 }
 
 type ParsedChampion struct {
@@ -158,9 +159,10 @@ func Parse(data *CDragonData) *ParsedSet {
 		})
 	}
 
-	// Filter items for current set
+	// Filter items and augments for current set
 	setPrefix := strings.ToLower(setData.Mutator)
 	items := filterItems(data.Items, setPrefix, setData.Number)
+	augments := filterAugments(data.Items, setData.Number)
 
 	return &ParsedSet{
 		Number:    setData.Number,
@@ -169,6 +171,7 @@ func Parse(data *CDragonData) *ParsedSet {
 		Champions: champions,
 		Traits:    traits,
 		Items:     items,
+		Augments:  augments,
 	}
 }
 
@@ -231,6 +234,56 @@ func filterItems(allItems []CDragonItem, setMutator string, setNumber int) []Par
 	}
 
 	return items
+}
+
+// filterAugments filters the global items list, keeping only augments for the current set.
+// Augments are identified by having a tag that equals "augment".
+func filterAugments(allItems []CDragonItem, setNumber int) []ParsedItem {
+	augments := make([]ParsedItem, 0)
+	setPrefix := strings.ToLower("tft" + itoa(setNumber) + "_")
+
+	for _, item := range allItems {
+		if !isAugment(item.Tags) {
+			continue
+		}
+
+		// Only include augments for the current set (apiName starts with tft{N}_)
+		// or generic augments (tft_augment_).
+		apiLower := strings.ToLower(item.APIName)
+		if !strings.HasPrefix(apiLower, setPrefix) && !strings.HasPrefix(apiLower, "tft_augment_") {
+			continue
+		}
+
+		// Skip augments with empty or template names
+		if item.Name == "" || strings.Contains(item.Name, "@") {
+			continue
+		}
+
+		augments = append(augments, ParsedItem{
+			APIName:            item.APIName,
+			Name:               item.Name,
+			Desc:               item.Desc,
+			Composition:        item.Composition,
+			Effects:            item.Effects,
+			IconURL:            ConvertIconPath(item.Icon),
+			AssociatedTraits:   item.AssociatedTraits,
+			IncompatibleTraits: item.IncompatibleTraits,
+			Tags:               item.Tags,
+			Unique:             item.Unique,
+		})
+	}
+
+	return augments
+}
+
+// isAugment returns true if the item's tags contain "augment".
+func isAugment(tags []string) bool {
+	for _, tag := range tags {
+		if strings.ToLower(tag) == "augment" {
+			return true
+		}
+	}
+	return false
 }
 
 // isRealItem returns true if the apiName represents a real equipable item.

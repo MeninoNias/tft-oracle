@@ -8,6 +8,7 @@ import { AuthPage } from "@/pages/auth";
 import { NotFoundPage } from "@/pages/not-found";
 import { InternalErrorPage } from "@/pages/internal-error";
 import { UnauthorizedPage } from "@/pages/unauthorized";
+import { AugmentsPage } from "@/pages/augments";
 
 export function App() {
   return (
@@ -24,6 +25,7 @@ export function App() {
               <Route path="/" element={<Navigate to="/champions" replace />} />
               <Route path="/champions" element={<ChampionsPage />} />
               <Route path="/items" element={<ItemsPage />} />
+              <Route path="/augments" element={<AugmentsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/player" element={<PlayerPage />} />
               <Route path="/error/500" element={<InternalErrorPage />} />

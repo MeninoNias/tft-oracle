@@ -59,6 +59,11 @@ func (s *Service) GetPatchData(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	augments, err := s.queries.GetAugmentsBySet(ctx, set.Number)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
 	// Build champion trait map
 	championTraits := make(map[string][]string)
 	for _, c := range champions {
@@ -120,6 +125,22 @@ func (s *Service) GetPatchData(
 		})
 	}
 
+	pbAugments := make([]*tftv1.Item, 0, len(augments))
+	for _, a := range augments {
+		pbAugments = append(pbAugments, &tftv1.Item{
+			ApiName:            a.ApiName,
+			Name:               a.Name,
+			Desc:               a.Description,
+			Composition:        a.Composition,
+			Effects:            mapItemEffectsToProto(a.Effects),
+			IconUrl:            a.IconUrl,
+			AssociatedTraits:   a.AssociatedTraits,
+			IncompatibleTraits: a.IncompatibleTraits,
+			Tags:               a.Tags,
+			Unique:             a.IsUnique,
+		})
+	}
+
 	return connect.NewResponse(&tftv1.GetPatchDataResponse{
 		Set: &tftv1.SetMetadata{
 			Number:  set.Number,
@@ -129,5 +150,6 @@ func (s *Service) GetPatchData(
 		Champions: pbChampions,
 		Items:     pbItems,
 		Traits:    pbTraits,
+		Augments:  pbAugments,
 	}), nil
 }

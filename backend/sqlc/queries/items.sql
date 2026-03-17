@@ -15,7 +15,10 @@ ON CONFLICT (api_name, set_number) DO UPDATE SET
 RETURNING *;
 
 -- name: GetItemsBySet :many
-SELECT * FROM items WHERE set_number = $1 ORDER BY name;
+SELECT * FROM items WHERE set_number = $1 AND NOT ('augment' = ANY(tags)) ORDER BY name;
+
+-- name: GetAugmentsBySet :many
+SELECT * FROM items WHERE set_number = $1 AND 'augment' = ANY(tags) ORDER BY name;
 
 -- name: DeleteItemsBySet :exec
 DELETE FROM items WHERE set_number = $1;
