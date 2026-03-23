@@ -23,11 +23,11 @@ var _ tftv1connect.AuthServiceHandler = (*Service)(nil)
 type Service struct {
 	db      *pgxpool.Pool
 	queries *generated.Queries
-	riot    *riot.Client
+	riot    riot.RiotAPI
 	jwt     *JWTManager
 }
 
-func NewService(db *pgxpool.Pool, riotClient *riot.Client, jwtMgr *JWTManager) *Service {
+func NewService(db *pgxpool.Pool, riotClient riot.RiotAPI, jwtMgr *JWTManager) *Service {
 	return &Service{
 		db:      db,
 		queries: generated.New(db),
