@@ -22,11 +22,11 @@ var _ tftv1connect.PlayerServiceHandler = (*Service)(nil)
 type Service struct {
 	db      *pgxpool.Pool
 	queries *generated.Queries
-	riot    *riot.Client
+	riot    riot.RiotAPI
 	cache   *cache.Client // can be nil
 }
 
-func NewService(db *pgxpool.Pool, riotClient *riot.Client, cacheClient *cache.Client) *Service {
+func NewService(db *pgxpool.Pool, riotClient riot.RiotAPI, cacheClient *cache.Client) *Service {
 	return &Service{
 		db:      db,
 		queries: generated.New(db),

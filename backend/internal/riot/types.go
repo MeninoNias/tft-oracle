@@ -41,6 +41,29 @@ type MiniSeriesDTO struct {
 	Target   int32  `json:"target"`
 }
 
+// LeagueListDTO represents a league list (TFT League V1 Challenger/Grandmaster/Master).
+type LeagueListDTO struct {
+	Tier     string          `json:"tier"`
+	LeagueID string          `json:"leagueId"`
+	Queue    string          `json:"queue"`
+	Name     string          `json:"name"`
+	Entries  []LeagueItemDTO `json:"entries"`
+}
+
+// LeagueItemDTO represents a single entry in a league list.
+type LeagueItemDTO struct {
+	SummonerID   string         `json:"summonerId"`
+	LeaguePoints int32          `json:"leaguePoints"`
+	Rank         string         `json:"rank"`
+	Wins         int32          `json:"wins"`
+	Losses       int32          `json:"losses"`
+	HotStreak    bool           `json:"hotStreak"`
+	Veteran      bool           `json:"veteran"`
+	FreshBlood   bool           `json:"freshBlood"`
+	Inactive     bool           `json:"inactive"`
+	MiniSeries   *MiniSeriesDTO `json:"miniSeries,omitempty"`
+}
+
 // MatchDTO represents a full TFT match (TFT Match V1).
 type MatchDTO struct {
 	Metadata MatchMetadataDTO `json:"metadata"`
