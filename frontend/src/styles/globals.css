@@ -22,6 +22,34 @@
     Menlo, Consolas, monospace;
 }
 
+/* Light theme — override lofi palette CSS variables */
+[data-theme="light"] {
+  --color-lofi-black: #ffffff;
+  --color-lofi-surface: #f4f4f5;
+  --color-lofi-border: #e4e4e7;
+  --color-lofi-muted: #a1a1aa;
+  --color-lofi-secondary: #64748b;
+  --color-lofi-text: #18181b;
+  --color-lofi-accent: #f97316;
+}
+
+/*
+ * In light theme, text-white (Tailwind utility = #fff) becomes invisible
+ * on white backgrounds. Remap it to the themed foreground color.
+ * This is safe because no component in this codebase uses text-white
+ * on a colored (non-lofi) background.
+ */
+[data-theme="light"] .text-white {
+  color: var(--color-lofi-text);
+}
+
+/* Shimmer animation for skeleton loading */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 * {
   font-family: var(--font-mono);
   -webkit-font-smoothing: antialiased;
