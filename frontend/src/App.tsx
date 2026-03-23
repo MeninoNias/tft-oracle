@@ -12,10 +12,12 @@ import { UnauthorizedPage } from "@/pages/unauthorized";
 import { AugmentsPage } from "@/pages/augments";
 import { SettingsPage } from "@/pages/settings";
 import { SplashScreen } from "@/components/splash-screen";
+import { useTheme } from "@/hooks/use-theme";
 
 const SPLASH_KEY = "tft-oracle-splash-seen";
 
 export function App() {
+  useTheme();
   const [showSplash, setShowSplash] = useState(
     () => !sessionStorage.getItem(SPLASH_KEY),
   );
