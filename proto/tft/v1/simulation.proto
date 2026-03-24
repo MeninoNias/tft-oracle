@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package tft.v1;
+
+option go_package = "github.com/MeninoNias/tft-oracle/backend/gen/tft/v1;tftv1";
+
+// SimulationService provides AI-powered battle analysis for TFT board states.
+service SimulationService {
+  // SimulateBattle analyzes two board states and predicts the battle outcome.
+  // If opponent_board is empty, analyzes the player's composition strengths/weaknesses.
+  rpc SimulateBattle(SimulateBattleRequest) returns (SimulateBattleResponse);
+}
+
+message SimulateBattleRequest {
+  BoardState player_board = 1;
+  BoardState opponent_board = 2;
+}
+
+message BoardState {
+  repeated PlacedChampion champions = 1;
+  // Augment apiNames (up to 3).
+  repeated string augments = 2;
+  // Player level (1-10).
+  int32 level = 3;
+}
+
+message PlacedChampion {
+  // Champion apiName (e.g. "TFT13_Garen").
+  string champion_api_name = 1;
+  // Board position: 0-27 (4 rows x 7 cols, row * 7 + col).
+  int32 position = 2;
+  // Star level: 1, 2, or 3.
+  int32 star_level = 3;
+  // Item apiNames equipped on this champion (up to 3).
+  repeated string item_api_names = 4;
+}
+
+message SimulateBattleResponse {
+  // Win probability for the player (0.0 to 1.0).
+  double win_probability = 1;
+  // AI confidence in the prediction (0.0 to 1.0).
+  double confidence = 2;
+  // Tactical summary paragraph.
+  string analysis = 3;
+  // One-liner positioning advice.
+  string positioning_tip = 4;
+  // 3-5 decisive factors influencing the outcome.
+  repeated string key_factors = 5;
+  // Actionable improvement suggestions.
+  repeated SuggestedChange suggested_changes = 6;
+}
+
+message SuggestedChange {
+  string description = 1;
+  // "high", "medium", or "low".
+  string priority = 2;
+  // "items", "positioning", "composition", or "economy".
+  string category = 3;
+}
