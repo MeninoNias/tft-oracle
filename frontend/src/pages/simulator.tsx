@@ -16,6 +16,9 @@ import { BoardControls } from "@/components/simulator/board-controls";
 import { ChampionPalette } from "@/components/simulator/champion-palette";
 import { SynergyPanel } from "@/components/simulator/synergy-panel";
 import { ItemSelector } from "@/components/simulator/item-selector";
+import { SimulationResults } from "@/components/simulator/simulation-results";
+import { useSimulateBattle } from "@/hooks/use-simulate-battle";
+import { Button } from "@/components/ui/button";
 
 export function SimulatorPage() {
   const { data, isLoading, error } = usePatchData();
@@ -23,6 +26,7 @@ export function SimulatorPage() {
   const placeChampion = useBoardStore((s) => s.placeChampion);
   const removeChampion = useBoardStore((s) => s.removeChampion);
   const [selectedPosition, setSelectedPosition] = useState<number | null>(null);
+  const simulation = useSimulateBattle();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -140,6 +144,32 @@ export function SimulatorPage() {
               </p>
               <ChampionPalette champions={data?.champions ?? []} />
             </div>
+
+            {/* Simulate button */}
+            <div className="mt-4">
+              <Button
+                onClick={() => simulation.mutate()}
+                disabled={
+                  Object.keys(board).length === 0 || simulation.isPending
+                }
+                className="w-full"
+              >
+                {simulation.isPending
+                  ? "analyzing battle..."
+                  : "simulate battle"}
+              </Button>
+            </div>
+
+            {/* Simulation results */}
+            {(simulation.data || simulation.isPending || simulation.error) && (
+              <div className="mt-4">
+                <SimulationResults
+                  data={simulation.data}
+                  isPending={simulation.isPending}
+                  error={simulation.error}
+                />
+              </div>
+            )}
 
             {/* Board stats */}
             <div className="mt-3 flex items-center gap-4 text-[10px] text-lofi-muted">
