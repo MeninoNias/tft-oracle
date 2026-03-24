@@ -16,6 +16,9 @@ type Config struct {
 	RiotAPIKey string
 	RedisURL   string
 
+	// Phase 3: AI Simulation
+	OpenAIAPIKey string
+
 	// Auth
 	JWTSecret string
 	JWTExpiry string // duration string, e.g. "720h" for 30 days
@@ -30,7 +33,8 @@ func Load() (*Config, error) {
 		LogLevel:    getEnv("LOG_LEVEL", "debug"),
 		RiotAPIKey:  getEnv("RIOT_API_KEY", ""),
 		RedisURL:    getEnv("REDIS_URL", "redis://localhost:6379"),
-		JWTSecret:   getEnv("JWT_SECRET", ""),
+		OpenAIAPIKey: getEnv("OPENAI_API_KEY", ""),
+		JWTSecret:    getEnv("JWT_SECRET", ""),
 		JWTExpiry:   getEnv("JWT_EXPIRY", "720h"),
 	}
 
@@ -40,6 +44,10 @@ func Load() (*Config, error) {
 
 	if cfg.RiotAPIKey == "" {
 		fmt.Println("WARNING: RIOT_API_KEY not set — player features will be unavailable")
+	}
+
+	if cfg.OpenAIAPIKey == "" {
+		fmt.Println("WARNING: OPENAI_API_KEY not set — simulation features will be unavailable")
 	}
 
 	return cfg, nil

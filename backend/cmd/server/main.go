@@ -18,6 +18,7 @@ import (
 	"golang.org/x/net/http2/h2c"
 
 	"github.com/MeninoNias/tft-oracle/backend/gen/tft/v1/tftv1connect"
+	"github.com/MeninoNias/tft-oracle/backend/internal/ai"
 	"github.com/MeninoNias/tft-oracle/backend/internal/auth"
 	"github.com/MeninoNias/tft-oracle/backend/internal/cache"
 	"github.com/MeninoNias/tft-oracle/backend/internal/cdragon"
@@ -26,6 +27,7 @@ import (
 	"github.com/MeninoNias/tft-oracle/backend/internal/patch"
 	"github.com/MeninoNias/tft-oracle/backend/internal/player"
 	"github.com/MeninoNias/tft-oracle/backend/internal/riot"
+	"github.com/MeninoNias/tft-oracle/backend/internal/simulation"
 )
 
 func main() {
@@ -112,6 +114,14 @@ func main() {
 		log.Println("auth: JWT_SECRET not set — auth features disabled")
 	}
 
+	// OpenAI client (optional — works without key)
+	aiClient := ai.NewClient(cfg.OpenAIAPIKey)
+	if aiClient.Available() {
+		log.Println("openai: configured")
+	} else {
+		log.Println("openai: OPENAI_API_KEY not set — simulation features disabled")
+	}
+
 	// Set up Connect RPC handlers
 	mux := http.NewServeMux()
 
@@ -137,6 +147,12 @@ func main() {
 		interceptors,
 	)
 	mux.Handle(authPath, authHandler)
+
+	simPath, simHandler := tftv1connect.NewSimulationServiceHandler(
+		simulation.NewService(pool, aiClient),
+		interceptors,
+	)
+	mux.Handle(simPath, simHandler)
 
 	// CORS configuration
 	corsHandler := cors.New(cors.Options{
