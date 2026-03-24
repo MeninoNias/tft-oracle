@@ -1,3 +1,4 @@
+import { ConnectError, Code } from "@connectrpc/connect";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WinProbabilityGauge } from "./win-probability-gauge";
 import { AnalysisCard } from "./analysis-card";
@@ -39,8 +40,18 @@ export function SimulationResults({
 
   if (error) {
     return (
-      <div className="rounded-sm border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
-        simulation failed: {error.message}
+      <div className="rounded-sm border border-lofi-accent/30 bg-lofi-surface p-4">
+        <div className="mb-2 flex items-center gap-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500/20 text-xs text-red-400">
+            !
+          </span>
+          <h3 className="text-xs font-bold text-white">
+            simulation unavailable
+          </h3>
+        </div>
+        <p className="text-xs leading-relaxed text-lofi-secondary">
+          {getSimulationErrorMessage(error)}
+        </p>
       </div>
     );
   }
@@ -59,4 +70,28 @@ export function SimulationResults({
       <SuggestedChanges changes={data.suggestedChanges} />
     </div>
   );
+}
+
+function getSimulationErrorMessage(error: Error): string {
+  if (error instanceof ConnectError) {
+    switch (error.code) {
+      case Code.Unimplemented:
+        return "the simulation service is not available on this server. make sure the backend is running with the SimulationService enabled.";
+      case Code.Unavailable:
+        return "the AI engine is offline — OPENAI_API_KEY may not be configured on the server.";
+      case Code.InvalidArgument:
+        return "invalid board state. place at least one champion before simulating.";
+      case Code.Internal:
+        return "the AI analysis failed. this may be a temporary issue — try again in a moment.";
+      case Code.ResourceExhausted:
+        return "too many simulation requests. please wait a moment and try again.";
+    }
+  }
+
+  // Fallback for network errors
+  if (error.message.includes("fetch") || error.message.includes("network")) {
+    return "cannot reach the server. make sure the backend is running on localhost:8080.";
+  }
+
+  return error.message;
 }
