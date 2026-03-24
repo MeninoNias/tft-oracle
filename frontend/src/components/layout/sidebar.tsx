@@ -5,6 +5,7 @@ const navItems = [
   { to: "/champions", label: "champions" },
   { to: "/items", label: "items" },
   { to: "/augments", label: "augments" },
+  { to: "/simulator", label: "simulator" },
   { to: "/profile", label: "profile" },
   { to: "/player", label: "player search" },
   { to: "/settings", label: "settings" },
