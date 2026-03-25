@@ -20,6 +20,11 @@
   /* Font family */
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono",
     Menlo, Consolas, monospace;
+
+  /* Animation timing */
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
 }
 
 /* Light theme — override lofi palette CSS variables */

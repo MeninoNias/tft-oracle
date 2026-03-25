@@ -4,6 +4,8 @@ import { SectionHeader } from "@/components/layout/section-header";
 import { SearchFilterBar } from "@/components/search-filter-bar";
 import { ItemCard } from "@/components/item-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { InlineError } from "@/components/ui/inline-error";
+import { friendlyError } from "@/lib/error";
 
 const typeFilters = [
   { label: "component", value: "component" },
@@ -11,7 +13,7 @@ const typeFilters = [
 ];
 
 export function ItemsPage() {
-  const { data, isLoading, error } = usePatchData();
+  const { data, isLoading, error, refetch } = usePatchData();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
 
@@ -35,8 +37,9 @@ export function ItemsPage() {
 
   if (error) {
     return (
-      <div className="text-xs text-red-400">
-        error: {error.message}
+      <div>
+        <SectionHeader number="02" title="items" />
+        <InlineError message={friendlyError(error)} onRetry={() => refetch()} />
       </div>
     );
   }

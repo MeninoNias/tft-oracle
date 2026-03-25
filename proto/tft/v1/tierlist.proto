@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package tft.v1;
+
+option go_package = "github.com/MeninoNias/tft-oracle/backend/gen/tft/v1;tftv1";
+
+// TierListService provides cross-source consolidated tier list data.
+service TierListService {
+  // GetConsolidatedTierList returns the merged tier list for a patch.
+  rpc GetConsolidatedTierList(GetConsolidatedTierListRequest) returns (GetConsolidatedTierListResponse);
+  // TriggerCrawl manually triggers a crawl cycle.
+  rpc TriggerCrawl(TriggerCrawlRequest) returns (TriggerCrawlResponse);
+  // GetCrawlerStatus returns the last crawl timestamps and per-source status.
+  rpc GetCrawlerStatus(GetCrawlerStatusRequest) returns (GetCrawlerStatusResponse);
+}
+
+message GetConsolidatedTierListRequest {
+  // Patch version (e.g. "14.10"). Empty = latest available.
+  string patch = 1;
+  // Filter by tier (e.g. "S"). Empty = all tiers.
+  string tier_filter = 2;
+}
+
+message GetConsolidatedTierListResponse {
+  string patch = 1;
+  repeated TierListEntry entries = 2;
+  // ISO 8601 timestamp of last consolidation.
+  string last_updated = 3;
+}
+
+message TierListEntry {
+  string composition_name = 1;
+  // Consolidated tier: "S", "A", "B", "C", "D".
+  string consolidated_tier = 2;
+  // Numeric score (0-100).
+  double consolidated_score = 3;
+  // "high", "medium", "low".
+  string confidence = 4;
+  // "unanimous", "majority", "split", "single_source".
+  string consensus = 5;
+  // Per-source tiers (empty string if source didn't have this comp).
+  string metatft_tier = 6;
+  string tftactics_tier = 7;
+  string mobalytics_tier = 8;
+  // Consolidated stats.
+  double avg_win_rate = 9;
+  double avg_play_rate = 10;
+  double avg_placement = 11;
+  // Champion api_names in this composition.
+  repeated string core_champions = 12;
+  // Recommended items per champion: champion_api_name -> item list.
+  map<string, ItemList> recommended_items = 13;
+}
+
+message ItemList {
+  repeated string item_api_names = 1;
+}
+
+message TriggerCrawlRequest {}
+
+message TriggerCrawlResponse {
+  string message = 1;
+}
+
+message GetCrawlerStatusRequest {}
+
+message GetCrawlerStatusResponse {
+  repeated SourceStatus sources = 1;
+  // ISO 8601 timestamp of last consolidation run.
+  string last_consolidation = 2;
+}
+
+message SourceStatus {
+  string source = 1;
+  // ISO 8601 timestamp of last successful scrape.
+  string last_scraped = 2;
+  // "ok", "error", "never".
+  string status = 3;
+  string error_message = 4;
+}

@@ -13,7 +13,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
 
   return (
     <div
-      className={`transition-all duration-200 ease-out ${
+      className={`will-change-transform transition-all duration-200 ease-out ${
         visible ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
       }`}
     >

@@ -6,6 +6,7 @@ const navItems = [
   { to: "/items", label: "items" },
   { to: "/augments", label: "augments" },
   { to: "/simulator", label: "simulator" },
+  { to: "/tier-list", label: "tier list" },
   { to: "/profile", label: "profile" },
   { to: "/player", label: "player search" },
   { to: "/settings", label: "settings" },
@@ -22,7 +23,7 @@ export function Sidebar() {
           TFT_ORACLE
         </h1>
         <p className="mt-0.5 text-[10px] text-lofi-muted">
-          v0.2.0 // phase 2
+          v0.4.0 // phase 4
         </p>
       </div>
 
@@ -79,7 +80,7 @@ export function Sidebar() {
 
       <div className="border-t border-lofi-border px-4 py-3">
         <p className="text-[10px] text-lofi-muted">
-          data: communitydragon + riot api
+          data: communitydragon + riot api + metatft + tftactics + mobalytics
         </p>
       </div>
     </aside>

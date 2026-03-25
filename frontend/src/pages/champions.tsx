@@ -4,6 +4,8 @@ import { SectionHeader } from "@/components/layout/section-header";
 import { SearchFilterBar } from "@/components/search-filter-bar";
 import { ChampionCard } from "@/components/champion-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { InlineError } from "@/components/ui/inline-error";
+import { friendlyError } from "@/lib/error";
 
 const costFilters = [
   { label: "1g", value: "1" },
@@ -14,7 +16,7 @@ const costFilters = [
 ];
 
 export function ChampionsPage() {
-  const { data, isLoading, error } = usePatchData();
+  const { data, isLoading, error, refetch } = usePatchData();
   const [search, setSearch] = useState("");
   const [costFilter, setCostFilter] = useState("all");
 
@@ -41,8 +43,9 @@ export function ChampionsPage() {
 
   if (error) {
     return (
-      <div className="text-xs text-red-400">
-        error: {error.message}
+      <div>
+        <SectionHeader number="01" title="champions" />
+        <InlineError message={friendlyError(error)} onRetry={() => refetch()} />
       </div>
     );
   }

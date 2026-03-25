@@ -16,6 +16,19 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
-    sourcemap: true,
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom", "react-router-dom"],
+          query: ["@tanstack/react-query"],
+          connect: [
+            "@connectrpc/connect",
+            "@connectrpc/connect-web",
+            "@bufbuild/protobuf",
+          ],
+        },
+      },
+    },
   },
 });
