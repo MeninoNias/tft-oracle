@@ -19,6 +19,7 @@ import { ItemSelector } from "@/components/simulator/item-selector";
 import { SimulationResults } from "@/components/simulator/simulation-results";
 import { useSimulateBattle } from "@/hooks/use-simulate-battle";
 import { Button } from "@/components/ui/button";
+import { AuthGate } from "@/components/auth/auth-gate";
 
 export function SimulatorPage() {
   const { data, isLoading, error } = usePatchData();
@@ -83,6 +84,8 @@ export function SimulatorPage() {
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div>
         <SectionHeader number="07" title="simulator" />
+
+        <AuthGate>
 
         <BoardControls />
 
@@ -182,6 +185,7 @@ export function SimulatorPage() {
             </div>
           </>
         )}
+        </AuthGate>
       </div>
     </DndContext>
   );

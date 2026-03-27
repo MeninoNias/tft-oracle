@@ -20,6 +20,7 @@ import (
 	"github.com/MeninoNias/tft-oracle/backend/gen/tft/v1/tftv1connect"
 	"github.com/MeninoNias/tft-oracle/backend/internal/ai"
 	"github.com/MeninoNias/tft-oracle/backend/internal/auth"
+	"github.com/MeninoNias/tft-oracle/backend/internal/coach"
 	"github.com/MeninoNias/tft-oracle/backend/internal/cache"
 	"github.com/MeninoNias/tft-oracle/backend/internal/cdragon"
 	"github.com/MeninoNias/tft-oracle/backend/internal/config"
@@ -184,6 +185,12 @@ func main() {
 		interceptors,
 	)
 	mux.Handle(tierListPath, tierListHandler)
+
+	coachPath, coachHandler := tftv1connect.NewCoachServiceHandler(
+		coach.NewService(pool, aiClient),
+		interceptors,
+	)
+	mux.Handle(coachPath, coachHandler)
 
 	// CORS configuration
 	corsHandler := cors.New(cors.Options{

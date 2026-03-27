@@ -10,6 +10,7 @@ import (
 	tftv1 "github.com/MeninoNias/tft-oracle/backend/gen/tft/v1"
 	"github.com/MeninoNias/tft-oracle/backend/gen/tft/v1/tftv1connect"
 	"github.com/MeninoNias/tft-oracle/backend/internal/ai"
+	"github.com/MeninoNias/tft-oracle/backend/internal/auth"
 	"github.com/MeninoNias/tft-oracle/backend/sqlc/generated"
 )
 
@@ -33,6 +34,11 @@ func (s *Service) SimulateBattle(
 	ctx context.Context,
 	req *connect.Request[tftv1.SimulateBattleRequest],
 ) (*connect.Response[tftv1.SimulateBattleResponse], error) {
+	// Require authentication
+	if _, err := auth.RequireAuth(ctx); err != nil {
+		return nil, err
+	}
+
 	// Validate request
 	if req.Msg.PlayerBoard == nil || len(req.Msg.PlayerBoard.Champions) == 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument,

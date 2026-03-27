@@ -56,3 +56,79 @@ type ActiveTrait struct {
 	Threshold int32 // breakpoint reached
 	Style     int32 // 0=inactive, 1=bronze, 2=silver, 3=gold, 4=chromatic
 }
+
+// --- Coach analysis types ---
+
+// MatchCoachAnalysis is the structured response for per-match coaching.
+type MatchCoachAnalysis struct {
+	OverallGrade   string            `json:"overall_grade"`
+	Summary        string            `json:"summary"`
+	Insights       []CoachingInsight `json:"insights"`
+	MetaComparison MetaComparison    `json:"meta_comparison"`
+	LobbyContext   LobbyContext      `json:"lobby_context"`
+	Suggestions    []CoachSuggestion `json:"suggestions"`
+}
+
+// CoachingInsight is a per-category coaching evaluation.
+type CoachingInsight struct {
+	Category string `json:"category"` // "composition", "itemization", "economy", "augments", "adaptability"
+	Title    string `json:"title"`
+	Detail   string `json:"detail"`
+	Grade    string `json:"grade"` // "good", "okay", "poor"
+}
+
+// MetaComparison compares the player's board against the current meta.
+type MetaComparison struct {
+	ClosestMetaComp string   `json:"closest_meta_comp"`
+	MetaTier        string   `json:"meta_tier"`
+	MissingUnits    []string `json:"missing_units"`
+	SuboptimalItems []string `json:"suboptimal_items"`
+	Assessment      string   `json:"assessment"`
+}
+
+// LobbyContext describes how contested the player's comp was in the lobby.
+type LobbyContext struct {
+	ContestedCount          int32    `json:"contested_count"`
+	LobbyStrengthAssessment string   `json:"lobby_strength_assessment"`
+	ContestedDetails        []string `json:"contested_details"`
+}
+
+// CoachSuggestion is a prioritized coaching action item.
+type CoachSuggestion struct {
+	Description string `json:"description"`
+	Priority    string `json:"priority"` // "high", "medium", "low"
+	Category    string `json:"category"` // "composition", "itemization", "economy", "augments", "adaptability"
+}
+
+// HistoryCoachAnalysis is the structured response for multi-match coaching.
+type HistoryCoachAnalysis struct {
+	OverallSummary  string            `json:"overall_summary"`
+	SkillRadar      SkillRadar        `json:"skill_radar"`
+	Patterns        []PatternInsight  `json:"patterns"`
+	Trends          []TrendItem       `json:"trends"`
+	ImprovementPlan []CoachSuggestion `json:"improvement_plan"`
+}
+
+// SkillRadar rates 5 skill dimensions from 0 to 100.
+type SkillRadar struct {
+	Economy      float64 `json:"economy"`
+	Itemization  float64 `json:"itemization"`
+	Composition  float64 `json:"composition"`
+	Adaptability float64 `json:"adaptability"`
+	Consistency  float64 `json:"consistency"`
+}
+
+// PatternInsight describes a recurring pattern across matches.
+type PatternInsight struct {
+	Category  string `json:"category"`
+	Title     string `json:"title"`
+	Detail    string `json:"detail"`
+	Sentiment string `json:"sentiment"` // "positive", "neutral", "negative"
+}
+
+// TrendItem describes a performance trend direction.
+type TrendItem struct {
+	Metric    string `json:"metric"`
+	Direction string `json:"direction"` // "improving", "stable", "declining"
+	Detail    string `json:"detail"`
+}

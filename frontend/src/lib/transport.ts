@@ -5,6 +5,7 @@ import { PlayerService } from "@/gen/tft/v1/player_pb";
 import { AuthService } from "@/gen/tft/v1/auth_pb";
 import { SimulationService } from "@/gen/tft/v1/simulation_pb";
 import { TierListService } from "@/gen/tft/v1/tierlist_pb";
+import { CoachService } from "@/gen/tft/v1/coach_pb";
 
 export const transport = createConnectTransport({
   baseUrl: "http://localhost:8080",
@@ -31,3 +32,4 @@ export const playerClient = createClient(PlayerService, transport);
 export const authClient = createClient(AuthService, transport);
 export const simulationClient = createClient(SimulationService, transport);
 export const tierListClient = createClient(TierListService, transport);
+export const coachClient = createClient(CoachService, transport);

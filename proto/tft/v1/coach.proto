@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package tft.v1;
+
+option go_package = "github.com/MeninoNias/tft-oracle/backend/gen/tft/v1;tftv1";
+
+// CoachService provides AI-powered post-game coaching analysis.
+service CoachService {
+  // GetMatchAnalysis returns a previously cached analysis (no AI call).
+  rpc GetMatchAnalysis(GetMatchAnalysisRequest) returns (GetMatchAnalysisResponse);
+  // AnalyzeMatch delivers personalized coaching for a single completed match.
+  rpc AnalyzeMatch(AnalyzeMatchRequest) returns (AnalyzeMatchResponse);
+  // AnalyzeHistory identifies patterns and trends across recent matches.
+  rpc AnalyzeHistory(AnalyzeHistoryRequest) returns (AnalyzeHistoryResponse);
+}
+
+// --- Per-match analysis ---
+
+message GetMatchAnalysisRequest {
+  string match_id = 1;
+  string puuid = 2;
+}
+
+message GetMatchAnalysisResponse {
+  // True if a cached analysis was found.
+  bool found = 1;
+  // The cached analysis (only set if found=true).
+  AnalyzeMatchResponse analysis = 2;
+}
+
+message AnalyzeMatchRequest {
+  string match_id = 1;
+  string puuid = 2;
+  // If true, skip cache and re-generate analysis.
+  bool force = 3;
+}
+
+message AnalyzeMatchResponse {
+  string match_id = 1;
+  int32 placement = 2;
+  // Letter grade: "S+", "S", "A+", "A", "B+", "B", "C+", "C", "D", "F".
+  string overall_grade = 3;
+  // 2-3 sentence coaching summary.
+  string summary = 4;
+  // Per-category coaching insights.
+  repeated CoachingInsight insights = 5;
+  // Comparison against current meta compositions.
+  MetaComparison meta_comparison = 6;
+  // Analysis of lobby context (contested comps, relative strength).
+  LobbyContext lobby_context = 7;
+  // Prioritized improvement suggestions.
+  repeated CoachSuggestion suggestions = 8;
+}
+
+message CoachingInsight {
+  // "composition", "itemization", "economy", "augments", or "adaptability".
+  string category = 1;
+  string title = 2;
+  string detail = 3;
+  // "good", "okay", or "poor".
+  string grade = 4;
+}
+
+message MetaComparison {
+  // Name of the closest meta composition.
+  string closest_meta_comp = 1;
+  // Tier of that composition: "S", "A", "B", "C", "D".
+  string meta_tier = 2;
+  // Champions missing from the ideal version of the comp.
+  repeated string missing_units = 3;
+  // Items that differ from BIS (Best in Slot).
+  repeated string suboptimal_items = 4;
+  // Free-text assessment of how close the board was to meta.
+  string assessment = 5;
+}
+
+message LobbyContext {
+  // Number of players running similar compositions.
+  int32 contested_count = 1;
+  // Assessment of overall lobby strength relative to this player.
+  string lobby_strength_assessment = 2;
+  // Details on which players contested and how.
+  repeated string contested_details = 3;
+}
+
+message CoachSuggestion {
+  string description = 1;
+  // "high", "medium", or "low".
+  string priority = 2;
+  // "composition", "itemization", "economy", "augments", or "adaptability".
+  string category = 3;
+}
+
+// --- Multi-match analysis ---
+
+message AnalyzeHistoryRequest {
+  string puuid = 1;
+  // Number of recent matches to analyze (default 20, max 50).
+  int32 match_count = 2;
+}
+
+message AnalyzeHistoryResponse {
+  int32 matches_analyzed = 1;
+  // Overall coaching summary across all analyzed matches.
+  string overall_summary = 2;
+  // Skill ratings across 5 dimensions (0-100 each).
+  SkillRadar skill_radar = 3;
+  // Recurring patterns detected across matches.
+  repeated PatternInsight patterns = 4;
+  // Performance trends (improving, stable, declining).
+  repeated TrendItem trends = 5;
+  // Top 3-5 prioritized improvement actions.
+  repeated CoachSuggestion improvement_plan = 6;
+}
+
+message SkillRadar {
+  // Economy management: leveling, gold management, loss/win-streaking.
+  float economy = 1;
+  // Item optimization: BIS choices, slam timing, component usage.
+  float itemization = 2;
+  // Composition quality: meta awareness, comp completeness, unit quality.
+  float composition = 3;
+  // Adaptability: flexibility, pivoting, not forcing comps.
+  float adaptability = 4;
+  // Consistency: placement variance, avoiding 8ths, steady top-4 rate.
+  float consistency = 5;
+}
+
+message PatternInsight {
+  // "composition", "itemization", "economy", "augments", or "adaptability".
+  string category = 1;
+  string title = 2;
+  string detail = 3;
+  // "positive", "neutral", or "negative".
+  string sentiment = 4;
+}
+
+message TrendItem {
+  // What metric is trending (e.g., "average placement", "top 4 rate").
+  string metric = 1;
+  // "improving", "stable", or "declining".
+  string direction = 2;
+  string detail = 3;
+}
