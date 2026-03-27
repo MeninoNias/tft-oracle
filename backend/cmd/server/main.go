@@ -20,14 +20,18 @@ import (
 	"github.com/MeninoNias/tft-oracle/backend/gen/tft/v1/tftv1connect"
 	"github.com/MeninoNias/tft-oracle/backend/internal/ai"
 	"github.com/MeninoNias/tft-oracle/backend/internal/auth"
+	"github.com/MeninoNias/tft-oracle/backend/internal/coach"
 	"github.com/MeninoNias/tft-oracle/backend/internal/cache"
 	"github.com/MeninoNias/tft-oracle/backend/internal/cdragon"
 	"github.com/MeninoNias/tft-oracle/backend/internal/config"
+	"github.com/MeninoNias/tft-oracle/backend/internal/consolidation"
+	"github.com/MeninoNias/tft-oracle/backend/internal/crawler"
 	"github.com/MeninoNias/tft-oracle/backend/internal/database"
 	"github.com/MeninoNias/tft-oracle/backend/internal/patch"
 	"github.com/MeninoNias/tft-oracle/backend/internal/player"
 	"github.com/MeninoNias/tft-oracle/backend/internal/riot"
 	"github.com/MeninoNias/tft-oracle/backend/internal/simulation"
+	"github.com/MeninoNias/tft-oracle/backend/internal/tierlist"
 )
 
 func main() {
@@ -122,6 +126,28 @@ func main() {
 		log.Println("openai: OPENAI_API_KEY not set — simulation features disabled")
 	}
 
+	// Crawler & consolidation (Phase 4)
+	consolidationEngine := consolidation.NewEngine(pool, nil)
+	httpClient := crawler.NewHTTPClient()
+	scrapers := []crawler.Scraper{
+		crawler.NewMobalyticsScraper(httpClient),
+		crawler.NewTacticsToolsScraper(httpClient),
+		crawler.NewMetaTFTScraper(httpClient),
+	}
+
+	crawlerInterval := 24 * time.Hour
+	if d, err := time.ParseDuration(cfg.CrawlerInterval); err == nil {
+		crawlerInterval = d
+	}
+
+	crawl := crawler.New(pool, scrapers, crawlerInterval, consolidationEngine.Consolidate)
+	if cfg.CrawlerEnabled {
+		go crawl.StartScheduler(ctx)
+		log.Println("crawler: enabled")
+	} else {
+		log.Println("crawler: disabled")
+	}
+
 	// Set up Connect RPC handlers
 	mux := http.NewServeMux()
 
@@ -153,6 +179,18 @@ func main() {
 		interceptors,
 	)
 	mux.Handle(simPath, simHandler)
+
+	tierListPath, tierListHandler := tftv1connect.NewTierListServiceHandler(
+		tierlist.NewService(pool, crawl),
+		interceptors,
+	)
+	mux.Handle(tierListPath, tierListHandler)
+
+	coachPath, coachHandler := tftv1connect.NewCoachServiceHandler(
+		coach.NewService(pool, aiClient),
+		interceptors,
+	)
+	mux.Handle(coachPath, coachHandler)
 
 	// CORS configuration
 	corsHandler := cors.New(cors.Options{

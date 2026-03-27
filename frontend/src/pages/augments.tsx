@@ -4,6 +4,8 @@ import { SectionHeader } from "@/components/layout/section-header";
 import { SearchFilterBar } from "@/components/search-filter-bar";
 import { AugmentCard } from "@/components/augment-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { InlineError } from "@/components/ui/inline-error";
+import { friendlyError } from "@/lib/error";
 
 const tierFilters = [
   { label: "silver", value: "silver" },
@@ -22,7 +24,7 @@ function getAugmentTier(tags: string[]): string | null {
 }
 
 export function AugmentsPage() {
-  const { data, isLoading, error } = usePatchData();
+  const { data, isLoading, error, refetch } = usePatchData();
   const [search, setSearch] = useState("");
   const [tierFilter, setTierFilter] = useState("all");
 
@@ -44,8 +46,9 @@ export function AugmentsPage() {
 
   if (error) {
     return (
-      <div className="text-xs text-red-400">
-        error: {error.message}
+      <div>
+        <SectionHeader number="05" title="augments" />
+        <InlineError message={friendlyError(error)} onRetry={() => refetch()} />
       </div>
     );
   }

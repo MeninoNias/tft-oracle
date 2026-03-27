@@ -1,9 +1,16 @@
 [package]
 name = "tft-oracle"
-version = "0.1.0"
+version = "0.4.0"
 description = "TFT Oracle — AI-powered TFT coach"
 authors = ["MeninoNias"]
 edition = "2021"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+opt-level = "s"
+panic = "abort"
 
 [lib]
 name = "tft_oracle_lib"

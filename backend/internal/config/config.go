@@ -22,6 +22,10 @@ type Config struct {
 	// Auth
 	JWTSecret string
 	JWTExpiry string // duration string, e.g. "720h" for 30 days
+
+	// Phase 4: Crawler
+	CrawlerInterval string // duration string, e.g. "24h"
+	CrawlerEnabled  bool
 }
 
 func Load() (*Config, error) {
@@ -34,8 +38,10 @@ func Load() (*Config, error) {
 		RiotAPIKey:  getEnv("RIOT_API_KEY", ""),
 		RedisURL:    getEnv("REDIS_URL", "redis://localhost:6379"),
 		OpenAIAPIKey: getEnv("OPENAI_API_KEY", ""),
-		JWTSecret:    getEnv("JWT_SECRET", ""),
-		JWTExpiry:   getEnv("JWT_EXPIRY", "720h"),
+		JWTSecret:       getEnv("JWT_SECRET", ""),
+		JWTExpiry:       getEnv("JWT_EXPIRY", "720h"),
+		CrawlerInterval: getEnv("CRAWLER_INTERVAL", "24h"),
+		CrawlerEnabled:  getEnv("CRAWLER_ENABLED", "true") == "true",
 	}
 
 	if cfg.DatabaseURL == "" {

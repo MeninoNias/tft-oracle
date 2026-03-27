@@ -161,3 +161,12 @@ tasks:
     dir: "{{.TAURI_DIR}}"
     cmds:
       - cargo tauri build
+
+  # ========================
+  # Release
+  # ========================
+  release:
+    desc: Create a release tag and push (triggers GitHub Actions)
+    cmds:
+      - git tag -a v{{.CLI_ARGS}} -m "Release v{{.CLI_ARGS}}"
+      - git push origin v{{.CLI_ARGS}}

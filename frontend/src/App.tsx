@@ -12,6 +12,8 @@ import { UnauthorizedPage } from "@/pages/unauthorized";
 import { AugmentsPage } from "@/pages/augments";
 import { SettingsPage } from "@/pages/settings";
 import { SimulatorPage } from "@/pages/simulator";
+import { CoachPage } from "@/pages/coach";
+import { TierListPage } from "@/pages/tier-list";
 import { SplashScreen } from "@/components/splash-screen";
 import { useTheme } from "@/hooks/use-theme";
 
@@ -48,6 +50,8 @@ export function App() {
               <Route path="/items" element={<ItemsPage />} />
               <Route path="/augments" element={<AugmentsPage />} />
               <Route path="/simulator" element={<SimulatorPage />} />
+              <Route path="/coach" element={<CoachPage />} />
+              <Route path="/tier-list" element={<TierListPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/player" element={<PlayerPage />} />
               <Route path="/settings" element={<SettingsPage />} />
